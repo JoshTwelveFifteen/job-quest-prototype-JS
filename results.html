@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your results – Job Quest</title>
+<link rel="stylesheet" href="jq.css">
+<style>
+.needs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.needs li { border: 2px solid var(--border); padding: 12px 15px; display: grid; gap: 6px; align-content: start; }
+.needs li.on { border-color: var(--text); border-width: 4px; padding: 10px 13px; }
+.needs strong { font-size: 19px; }
+.needs span.w { font-size: 16px; color: var(--secondary); }
+.tools { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.tools li { padding: 15px 0; border-bottom: 1px solid var(--border); display: grid; gap: 4px; }
+.tools a { font-weight: 700; }
+.tools p { margin: 0; font-size: 16px; color: var(--secondary); }
+.card .badge { justify-self: start; }
+.seg-head { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="jq-top"></div>
+<main>
+  <div class="width">
+    <div>
+      <a class="back" href="index.html">Back to the quiz</a>
+    </div>
+    <div class="panel">
+      <h1>Your results</h1>
+      <p id="panel-line">You are an Explorer</p>
+    </div>
+    <p id="example-note" class="inset" hidden>You have not taken the quiz yet, so these results use example answers for someone with no work experience and no clear idea of what they want to do. <a href="index.html">Take the quiz</a></p>
+
+    <section aria-labelledby="about-h">
+      <h2 id="about-h">What we think about you</h2>
+      <p class="lead" id="about" style="margin-bottom:20px"></p>
+      <p>Based on your answers:</p>
+      <ul class="list" id="facts"></ul>
+    </section>
+
+    <section aria-labelledby="need-h">
+      <h2 id="need-h">What you need right now</h2>
+      <ul class="needs" id="needs"></ul>
+    </section>
+
+    <section aria-labelledby="next-h">
+      <h2 id="next-h">Choose what to do next</h2>
+      <div class="cards" id="routes"></div>
+    </section>
+
+    <section aria-labelledby="tools-h">
+      <h2 id="tools-h">Other tools that can help</h2>
+      <ul class="tools">
+        <li><a href="https://findajob.dwp.gov.uk/" target="_blank" rel="noopener">Find a job (opens in new tab)</a><p>Search for jobs across the UK on the government job board.</p></li>
+        <li><a href="https://www.gov.uk/get-help-applying-for-jobs" target="_blank" rel="noopener">Get help applying for jobs (opens in new tab)</a><p>Government support with finding work and applying for jobs.</p></li>
+        <li><a href="https://www.civilservicejobs.service.gov.uk/" target="_blank" rel="noopener">Civil Service Jobs (opens in new tab)</a><p>Jobs in government departments and agencies.</p></li>
+        <li><a href="https://nationalcareers.service.gov.uk/skills-assessment" target="_blank" rel="noopener">Skills assessment (opens in new tab)</a><p>Find out what you are good at and the types of jobs that might suit you.</p></li>
+        <li><a href="https://nationalcareers.service.gov.uk/explore-careers" target="_blank" rel="noopener">Explore careers (opens in new tab)</a><p>Learn what different jobs involve, what they pay and how to get into them.</p></li>
+        <li><a href="https://nationalcareers.service.gov.uk/careers-advice/cv-sections" target="_blank" rel="noopener">CV advice (opens in new tab)</a><p>What to put in each section of your CV.</p></li>
+        <li><a href="https://nationalcareers.service.gov.uk/careers-advice/interview-advice" target="_blank" rel="noopener">Interview advice (opens in new tab)</a><p>How to prepare, what to expect and common questions.</p></li>
+        <li><a href="https://nationalcareers.service.gov.uk/contact-us" target="_blank" rel="noopener">Speak to a careers adviser (opens in new tab)</a><p>Free, impartial advice by phone, webchat or face to face.</p></li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="check-h">
+      <h2 id="check-h">Your answers</h2>
+      <dl class="summary" id="answers"></dl>
+    </section>
+  </div>
+</main>
+<div id="jq-foot"></div>
+
+<script src="jq.js"></script>
+<script>
+JQ.chrome('results.html');
+const real = JQ.answers(), a = real || JQ.EXAMPLE_ANSWERS;
+document.getElementById('example-note').hidden = !!real;
+const key = JQ.segmentFor(a), seg = JQ.SEGMENTS[key];
+document.getElementById('panel-line').innerHTML = `You are ${/^[AEIOU]/.test(seg.title) ? 'an' : 'a'} <strong>${seg.title}</strong>`;
+document.getElementById('about').textContent = seg.about;
+
+const facts = [];
+facts.push({ 'very': 'you feel very confident about finding a job', 'quite': 'you feel quite confident about finding a job', 'not-very': 'you do not feel very confident yet, and that is normal', 'not-at-all': 'you do not feel confident yet, and we can help with that' }[a.confidence]);
+facts.push({ recent: 'you have had a paid job recently', past: 'you have worked before, but not recently', never: 'you have not had a paid job yet, so we will help you find skills from school, hobbies and everyday life' }[a.work]);
+facts.push({ yes: 'you know the job you want', some: 'you have a few ideas about the work you want', no: 'you are not sure yet what work you want to do' }[a.idea]);
+facts.push({ good: 'you have a CV you are happy with', 'needs-work': 'your CV needs some work', none: 'you do not have a CV yet' }[a.cv]);
+facts.push({ yes: 'you have been invited to interviews', no: 'you have not had an interview recently' }[a.interviews]);
+document.getElementById('facts').innerHTML = facts.filter(Boolean).map(f => `<li>${f}</li>`).join('');
+
+document.getElementById('needs').innerHTML = Object.entries(JQ.SEGMENTS).map(([k, s]) =>
+  `<li class="${k === key ? 'on' : ''}">${k === key ? '<strong class="tag yellow" style="justify-self:start">Start here</strong>' : ''}<strong>${s.need}</strong><span class="w">${JQ.WORLDS[s.world].name}</span></li>`).join('');
+
+const w = seg.world;
+const routes = [
+  { title: 'Take the Job Quest', rec: true, body: `Our step-by-step game for building your knowledge, skills and work readiness. Based on your answers, you would start in <strong>${JQ.WORLDS[w].name}</strong>.`, link: '<a class="btn" href="quest.html">Find out about the quest</a>' },
+  { title: 'Make a CV', body: 'Go straight to the CV builder and get help writing your CV.', link: '<a href="https://nationalcareers.service.gov.uk/careers-advice/cv-sections" target="_blank" rel="noopener">CV builder (opens in new tab)</a>' },
+  { title: 'Practise for interviews', body: 'Prepare for questions you might be asked and what to expect on the day.', link: '<a href="https://nationalcareers.service.gov.uk/careers-advice/interview-advice" target="_blank" rel="noopener">Interview practice (opens in new tab)</a>' },
+];
+document.getElementById('routes').innerHTML = routes.map(r =>
+  `<div class="card ${r.rec ? 'rec' : ''}">${r.rec ? '<strong class="tag yellow badge">Recommended for you</strong>' : ''}<h3>${r.title}</h3><p>${r.body}</p><div>${r.link}</div></div>`).join('');
+
+document.getElementById('answers').innerHTML = JQ.QUESTIONS.map(q =>
+  `<div><dt>${q.q}</dt><dd>${JQ.label(q.id, a[q.id])}</dd><dd><a href="index.html">Change<span class="visually-hidden"> ${q.q.toLowerCase()}</span></a></dd></div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your applications – Job Quest</title>
+<link rel="stylesheet" href="jq.css">
+<style>
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.metric { border-top: 5px solid var(--link); padding-top: 10px; display: grid; gap: 4px; align-content: start; }
+.metric .big { font-size: 48px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .stars { font-size: 30px; letter-spacing: 2px; line-height: 1.2; }
+.metric span { font-size: 16px; color: var(--secondary); }
+.compare { display: grid; gap: 6px; font-size: 16px; margin-top: 4px; }
+.compare .row { display: grid; grid-template-columns: 110px minmax(0, 1fr) 30px; gap: 8px; align-items: center; font-variant-numeric: tabular-nums; }
+.compare .bar { height: 14px; background: var(--bg-grey); }
+.compare .bar i { display: block; height: 100%; background: var(--link); }
+.compare .row.you .bar i { background: var(--green); }
+.advice { display: grid; gap: 10px; }
+.advice .inset { border-left-color: var(--link); }
+.advice .inset.good { border-left-color: var(--green); }
+.advice .inset strong { display: block; margin-bottom: 4px; }
+.table-wrap { overflow-x: auto; }
+table.apps { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 16px; }
+.apps th, .apps td { text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.apps th { font-weight: 700; }
+.apps td.stars { white-space: nowrap; letter-spacing: 1px; }
+.apps select { font: inherit; font-size: 16px; padding: 4px; border: 2px solid var(--text); border-radius: 0; background: var(--white); }
+.apps select:focus { outline: 3px solid var(--focus); outline-offset: 0; }
+.apps .next { display: block; font-size: 14px; color: var(--secondary); margin-top: 4px; }
+.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end; }
+.add .input, .add select { max-width: none; }
+.add select { font: inherit; height: 40px; border: 2px solid var(--text); border-radius: 0; padding: 4px; width: 100%; background: var(--white); }
+.add select:focus { outline: 3px solid var(--focus); outline-offset: 0; }
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; }
+.empty { padding: 20px; background: var(--bg-grey); }
+</style>
+</head>
+<body>
+<div id="jq-top"></div>
+<main>
+  <div class="width">
+    <div>
+      <p class="caption">Search for jobs · Quest 3-4</p>
+      <h1>Track your applications</h1>
+      <p class="lead">Keep a record of every job you apply for. We show how relevant your applications are and how you compare with people like you.</p>
+    </div>
+
+    <section aria-labelledby="stats-h">
+      <h2 id="stats-h" class="visually-hidden">Your numbers</h2>
+      <div class="metrics" id="metrics"></div>
+    </section>
+
+    <section aria-labelledby="adv-h">
+      <h2 id="adv-h">How you are doing</h2>
+      <div class="advice" id="advice"></div>
+    </section>
+
+    <section aria-labelledby="list-h">
+      <div class="sec-head"><h2 id="list-h">Your applications</h2><span id="ex-tools"></span></div>
+      <div id="list"></div>
+    </section>
+
+    <section aria-labelledby="add-h" class="box">
+      <h2 id="add-h">Add an application</h2>
+      <form id="add" class="add" novalidate>
+        <div><label class="label" for="a-title">Job title</label><input class="input" id="a-title" name="title" autocomplete="off"></div>
+        <div><label class="label" for="a-emp">Employer</label><input class="input" id="a-emp" name="employer" autocomplete="off"></div>
+        <div><label class="label" for="a-date">Date applied</label><input class="input" id="a-date" name="date" type="date"></div>
+        <div><label class="label" for="a-match">How well does it match you?</label>
+          <select id="a-match" name="match"><option value="5">5 stars: a great fit</option><option value="4" selected>4 stars: a good fit</option><option value="3">3 stars: some fit</option><option value="2">2 stars: a stretch</option><option value="1">1 star: not a good fit</option></select></div>
+        <div><label class="label" for="a-status">Status</label>
+          <select id="a-status" name="status"></select></div>
+        <div><button class="btn" type="submit">Add application</button></div>
+      </form>
+      <p class="error-msg" id="add-err" hidden style="margin-top:15px">Enter a job title and employer</p>
+    </section>
+  </div>
+</main>
+<div id="jq-foot"></div>
+
+<script src="jq.js"></script>
+<script>
+JQ.chrome('applications.html');
+const esc = JQ.esc;
+const STATUS = {
+  applied: { t: 'Applied', tag: 'blue', next: 'Most employers reply within 2 weeks.' },
+  'no-response': { t: 'No response', tag: 'grey', next: 'Follow up politely, or move on to the next one.' },
+  interview: { t: 'Interview', tag: 'purple', next: 'Head to Interviewing to prepare.' },
+  offer: { t: 'Offer', tag: 'green', next: 'Well done! Tell your network.' },
+  unsuccessful: { t: 'Unsuccessful', tag: 'yellow', next: 'Ask for feedback. Trial and error is normal.' },
+};
+document.getElementById('a-status').innerHTML = Object.entries(STATUS).map(([v, s]) => `<option value="${v}">${s.t}</option>`).join('');
+
+const today = new Date(), iso = d => d.toISOString().slice(0, 10), daysAgo = n => iso(new Date(today - n * 864e5));
+document.getElementById('a-date').value = iso(today);
+const EXAMPLES = [
+  { title: 'Retail assistant', employer: 'High street shop', date: daysAgo(2), match: 5, status: 'interview', example: true },
+  { title: 'Customer service adviser', employer: 'Energy company', date: daysAgo(4), match: 4, status: 'applied', example: true },
+  { title: 'Warehouse operative', employer: 'Logistics firm', date: daysAgo(9), match: 3, status: 'unsuccessful', example: true },
+  { title: 'Admin apprentice', employer: 'Local council', date: daysAgo(12), match: 4, status: 'no-response', example: true },
+];
+let apps = JQ.store.get('jq-apps', null);
+if (!Array.isArray(apps)) { apps = EXAMPLES.slice(); JQ.store.set('jq-apps', apps); }
+const save = () => JQ.store.set('jq-apps', apps);
+const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+const PEERS = 4; // example: applications per week by people like you
+
+function render() {
+  const n = apps.length;
+  const week = apps.filter(a => (today - new Date(a.date)) / 864e5 <= 7).length;
+  const avg = n ? apps.reduce((s, a) => s + +a.match, 0) / n : 0;
+  const interviews = apps.filter(a => a.status === 'interview' || a.status === 'offer').length;
+  const rate = n ? Math.round(interviews / n * 100) : 0;
+  const goodFit = apps.filter(a => +a.match >= 4).length;
+  const max = Math.max(PEERS, week, 1);
+
+  document.getElementById('metrics').innerHTML =
+    `<div class="metric"><span>Applications</span><strong class="big">${n}</strong><span>${goodFit} are a good fit or better</span></div>` +
+    `<div class="metric"><span>Average job match</span><strong class="stars" aria-label="${avg.toFixed(1)} out of 5">${stars(Math.round(avg))}</strong><span>${avg.toFixed(1)} out of 5</span></div>` +
+    `<div class="metric"><span>Interview rate</span><strong class="big">${rate}%</strong><span>${interviews} of ${n} reached interview</span></div>` +
+    `<div class="metric"><span>This week</span><div class="compare">` +
+      `<div class="row you"><span>You</span><span class="bar"><i style="width:${week / max * 100}%"></i></span><strong>${week}</strong></div>` +
+      `<div class="row"><span>People like you</span><span class="bar"><i style="width:${PEERS / max * 100}%"></i></span><strong>${PEERS}</strong></div>` +
+    `</div><span>People like you is an example figure</span></div>`;
+
+  const adv = [];
+  if (n < 5) adv.push(['', 'Aim for a few more applications', `You have ${n}. Applying for a range of jobs gives you more chances to get an interview.`]);
+  if (n && avg < 3.5) adv.push(['', 'Focus on jobs that match you', 'Your average match is low. Try the "Is this job right for me?" quiz before you apply.']);
+  if (n >= 4 && interviews === 0) adv.push(['', 'Not hearing back?', 'Go back to Create a CV and get feedback on your CV, then tailor it for each job.']);
+  if (apps.some(a => a.status === 'unsuccessful')) adv.push(['', 'Ask for feedback', 'When an application is unsuccessful, ask the employer what would have made it stronger. Do not be put off. It may take time to find your match.']);
+  if (interviews) adv.push(['good', 'You have an interview', 'Brilliant. Use the quests in Interviewing to prepare.']);
+  if (n >= 5 && avg >= 3.5) adv.push(['good', 'You are applying for a range of jobs that are a good fit', 'This is exactly where you should be. Keep going.']);
+  document.getElementById('advice').innerHTML = adv.map(([c, h, t]) => `<div class="inset ${c}"><strong>${h}</strong>${t}</div>`).join('') || '<p>Add your first application to see how you are doing.</p>';
+
+  const hasEx = apps.some(a => a.example);
+  document.getElementById('ex-tools').innerHTML = hasEx ? `<strong class="tag grey">Includes examples</strong> <button class="linkbtn" type="button" id="clear-ex" style="font-size:16px;margin-left:8px">Remove examples</button>` : '';
+
+  document.getElementById('list').innerHTML = n ? `<div class="table-wrap"><table class="apps"><thead><tr><th>Job</th><th>Employer</th><th>Applied</th><th>Match</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>` +
+    apps.map((a, i) => {
+      const d = new Date(a.date);
+      return `<tr><td><strong>${esc(a.title)}</strong>${a.example ? ' <span class="tag grey">Example</span>' : ''}</td><td>${esc(a.employer)}</td>` +
+        `<td>${isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>` +
+        `<td class="stars" aria-label="${a.match} out of 5">${stars(+a.match)}</td>` +
+        `<td><label class="visually-hidden" for="st-${i}">Status for ${esc(a.title)}</label><select id="st-${i}" data-i="${i}">${Object.entries(STATUS).map(([v, s]) => `<option value="${v}"${a.status === v ? ' selected' : ''}>${s.t}</option>`).join('')}</select>` +
+        `<span class="next">${STATUS[a.status].next}${a.status === 'interview' ? ' <a href="map.html">Go to the map</a>' : ''}${a.status === 'offer' ? ' <a href="profile.html#share">Share your news</a>' : ''}</span></td>` +
+        `<td><button class="linkbtn" type="button" data-del="${i}">Remove<span class="visually-hidden"> ${esc(a.title)}</span></button></td></tr>`;
+    }).join('') + `</tbody></table></div>`
+    : `<div class="empty">You have not added any applications yet. Use the form below to add your first one.</div>`;
+}
+
+document.getElementById('list').addEventListener('change', e => { const s = e.target.closest('select[data-i]'); if (!s) return; apps[+s.dataset.i].status = s.value; save(); render(); document.getElementById('st-' + s.dataset.i)?.focus(); });
+document.getElementById('list').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; apps.splice(+b.dataset.del, 1); save(); render(); });
+document.getElementById('ex-tools').addEventListener('click', e => { if (e.target.id === 'clear-ex') { apps = apps.filter(a => !a.example); save(); render(); } });
+document.getElementById('add').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = new FormData(e.target), title = (f.get('title') || '').trim(), employer = (f.get('employer') || '').trim();
+  const err = document.getElementById('add-err');
+  if (!title || !employer) { err.hidden = false; (title ? document.getElementById('a-emp') : document.getElementById('a-title')).focus(); return; }
+  err.hidden = true;
+  apps.unshift({ title, employer, date: f.get('date') || iso(today), match: +f.get('match'), status: f.get('status') });
+  save(); e.target.reset(); document.getElementById('a-date').value = iso(today); document.getElementById('a-match').value = '4'; render();
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quest map – Job Quest</title>
+<link rel="stylesheet" href="jq.css">
+<style>
+/* Layout: public-service style page — black header bar, single column; "before the quest" flow, progress + leaderboard, illustrated map with loop roads, then step-by-step list. Single light theme by design. */
+:root {
+  --text: #0b0c0c;
+  --secondary: #505a5f;
+  --border: #b1b4b6;
+  --bg-grey: #f3f2f1;
+  --white: #ffffff;
+  --link: #1d70b8;
+  --focus: #ffdd00;
+  --green: #00703c;
+  --green-shadow: #002d18;
+  --font: arial, 'Helvetica Neue', Helvetica, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--white); color: var(--text); font-family: var(--font); font-size: 19px; line-height: 1.32; -webkit-font-smoothing: antialiased; }
+.width { max-width: 1020px; margin: 0 auto; padding-left: max(15px, env(safe-area-inset-left, 0px)); padding-right: max(15px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 641px) { .width { padding-left: max(30px, env(safe-area-inset-left, 0px)); padding-right: max(30px, env(safe-area-inset-right, 0px)); } }
+
+.header { background: var(--text); color: var(--white); border-bottom: 10px solid var(--link); }
+.header .width { padding-block: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 20px; }
+.service { font-weight: 700; font-size: 24px; color: var(--white); display: flex; align-items: center; gap: 10px; }
+.service svg { flex: none; }
+.header nav { font-size: 16px; font-weight: 700; }
+
+.phase { border-bottom: 1px solid var(--border); }
+.phase .width { padding-block: 10px; display: flex; gap: 10px; align-items: baseline; font-size: 16px; }
+.tag { display: inline-block; font-size: 16px; font-weight: 400; padding: 2px 8px 3px; white-space: nowrap; }
+.tag.blue { background: #bbd4ea; color: #0c2d4a; }
+.tag.green { background: #cce2d8; color: #005a30; }
+.tag.grey { background: #e5e6e7; color: #282d30; }
+.tag.yellow { background: #fff7bf; color: #594d00; }
+.tag.purple { background: #dbd5e9; color: #3d2375; }
+
+main .width { padding-block: 30px 50px; display: grid; gap: 40px; }
+section { min-width: 0; }
+.caption { color: var(--secondary); font-size: 24px; margin: 0 0 5px; }
+h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.05; margin: 0 0 20px; font-weight: 700; text-wrap: balance; }
+h2 { font-size: clamp(24px, 3.5vw, 36px); margin: 0 0 8px; line-height: 1.1; text-wrap: balance; }
+.lead { font-size: 24px; line-height: 1.25; margin: 0; max-width: 30em; }
+p { margin: 0; max-width: 34em; }
+.body-s { font-size: 16px; color: var(--secondary); }
+
+/* Before the quest */
+.pre { list-style: none; margin: 20px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; counter-reset: pre; }
+.pre > li { border-top: 5px solid var(--link); background: var(--bg-grey); padding: 12px 15px 15px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.pre > li::before { counter-increment: pre; content: counter(pre); font-weight: 700; font-size: 16px; color: var(--secondary); }
+.pre h3 { margin: 0; font-size: 19px; }
+.pre p { font-size: 16px; }
+.pre li.wide { grid-column: span 2; }
+@media (max-width: 640px) { .pre li.wide { grid-column: auto; } }
+.routes { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; font-size: 16px; }
+.routes li { background: var(--white); padding: 6px 10px; border-left: 4px solid var(--border); }
+.routes li.quest { border-left-color: var(--focus); font-weight: 700; }
+.routes span { display: block; font-weight: 400; color: var(--secondary); font-size: 14px; }
+
+/* Progress + leaderboard */
+.status { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 30px; align-items: start; }
+@media (max-width: 760px) { .status { grid-template-columns: 1fr; } }
+.progress { display: grid; gap: 15px; padding-left: 15px; border-left: 10px solid var(--border); }
+.progress strong.big { font-size: 24px; }
+.xp { display: inline-flex; gap: 8px; align-items: center; font-weight: 700; }
+.meter { height: 12px; background: var(--bg-grey); }
+.meter i { display: block; height: 100%; background: var(--green); transition: width .4s ease; }
+.buttons { display: flex; flex-wrap: wrap; gap: 15px; }
+.btn { font-family: var(--font); font-size: 19px; line-height: 1.2; padding: 8px 12px 7px; border: 2px solid transparent; border-radius: 0; color: var(--white); background: var(--green); box-shadow: 0 2px 0 var(--green-shadow); cursor: pointer; }
+.btn:hover { background: #005a30; }
+.btn.secondary { background: var(--bg-grey); color: var(--text); box-shadow: 0 2px 0 #929191; }
+.btn.secondary:hover { background: #dbdad9; }
+.btn:active { transform: translateY(2px); box-shadow: none; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: 3px solid transparent; background: var(--focus); color: var(--text); box-shadow: 0 2px 0 var(--text); border-color: var(--focus); }
+
+.board { border: 1px solid var(--border); padding: 15px; display: grid; gap: 10px; }
+.board-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.board h3 { margin: 0; font-size: 19px; }
+.board table { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
+.board th, .board td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+.board th { font-weight: 700; }
+.board td.n, .board th.n { text-align: right; }
+.board tr.you td { font-weight: 700; background: #fff7bf; }
+.feed { list-style: none; margin: 0; padding: 0; font-size: 14px; color: var(--secondary); display: grid; gap: 4px; }
+
+/* Map */
+.map { border: 1px solid var(--border); }
+.map-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.map svg { display: block; width: 100%; min-width: 900px; height: auto; }
+.key { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 16px; color: var(--secondary); margin-top: 10px; }
+.key span { display: inline-flex; gap: 8px; align-items: center; }
+.node { cursor: pointer; }
+.node:focus { outline: none; }
+.node:focus-visible .ring { stroke: var(--text); stroke-width: 4; }
+.hero-bob { animation: bob .9s ease-in-out infinite alternate; }
+@keyframes bob { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+/* Step by step */
+.steps { list-style: none; margin: 20px 0 0; padding: 0; }
+.step { position: relative; padding: 0 0 34px 50px; }
+.step::before { content: ''; position: absolute; left: 16px; top: 36px; bottom: 0; width: 3px; background: var(--border); }
+.step:last-child::before { display: none; }
+.step.done::before { background: var(--green); }
+.num { position: absolute; left: 0; top: 0; width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--border); background: var(--white); display: grid; place-items: center; font-weight: 700; font-size: 19px; }
+.step.done .num { background: var(--green); border-color: var(--green); color: var(--white); }
+.step.now .num { background: var(--text); border-color: var(--text); color: var(--white); box-shadow: 0 0 0 4px var(--focus); }
+.step.final .num { background: #4c2c92; border-color: #4c2c92; color: var(--white); }
+.step-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 15px; min-height: 35px; padding-top: 3px; }
+.step h3 { margin: 0; font-size: 24px; }
+.place { color: var(--secondary); font-size: 16px; margin-top: 2px; }
+.tasks { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--border); }
+.tasks li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 15px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.tasks li > span { min-width: 0; flex: 1 1 260px; }
+.task-note { display: block; font-size: 16px; color: var(--secondary); margin-top: 2px; }
+.tasks li.side { background: #fffbe0; padding-left: 10px; padding-right: 10px; }
+.linkbtn { font: inherit; background: none; border: 0; padding: 0; color: var(--link); text-decoration: underline; text-underline-offset: .15em; text-decoration-thickness: 1px; cursor: pointer; text-align: left; }
+.linkbtn:hover { color: #003078; text-decoration-thickness: 3px; }
+.linkbtn:focus-visible { outline: 3px solid transparent; background: var(--focus); color: var(--text); box-shadow: 0 -2px var(--focus), 0 4px var(--text); text-decoration: none; }
+.code { color: var(--secondary); font-size: 16px; margin-right: 8px; font-variant-numeric: tabular-nums; }
+.inset { margin-top: 15px; padding: 10px 15px; border-left: 10px solid var(--border); font-size: 16px; }
+.inset strong { display: block; margin-bottom: 4px; font-size: 16px; }
+.inset ul { margin: 0; padding-left: 20px; }
+.inset.loop { border-left-color: var(--link); }
+
+.footer { background: var(--bg-grey); border-top: 1px solid var(--border); }
+.footer .width { padding-block: 25px 30px; font-size: 16px; color: var(--secondary); }
+
+@media (prefers-reduced-motion: reduce) { .hero-bob { animation: none; } .meter i { transition: none; } }
+</style>
+</head>
+<body>
+
+<div id="jq-top"></div>
+
+<main>
+  <div class="width">
+    <div>
+      <p class="caption">The Job Quest</p>
+      <h1>Quest map</h1>
+      <p class="lead">Take a short quiz, create your avatar, then work through 4 worlds. Earn XP for every quest. Some roads loop back, because applying, interviewing and improving your CV often happen more than once.</p>
+    </div>
+
+    <section class="status" aria-label="Your progress">
+      <div class="progress" aria-live="polite">
+        <strong class="big" id="p-count">4 of 16 quests completed</strong>
+        <span class="xp"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffdd00" stroke="#0b0c0c" stroke-width="2"/><path d="M12 5.5l2 4.2 4.5.5-3.4 3 1 4.4-4.1-2.3-4.1 2.3 1-4.4-3.4-3 4.5-.5z" fill="#0b0c0c"/></svg><span id="p-xp">400 XP</span></span>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        <p id="p-now">You are on quest 2-1.</p>
+        <div class="buttons">
+          <button class="btn" id="next" type="button">Complete this quest</button>
+          <button class="btn secondary" id="prev" type="button">Go back a quest</button>
+        </div>
+      </div>
+      <div class="board">
+        <div class="board-head"><h3>Your player</h3></div>
+        <div id="mini"></div>
+        <a href="profile.html">See your profile, skills and trophies</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="map-h">
+      <h2 id="map-h">Quest map</h2>
+      <div class="map">
+        <div class="map-scroll">
+          <svg id="map" viewBox="0 0 1600 740" role="img" aria-label="Illustrated map of the job seeking journey through Know yourself, Create a CV, Search for jobs and Interviewing to a job offer, with loop roads from Interviewing back to Search for jobs, from Search for jobs back to Create a CV, and from Create a CV back to Know yourself"></svg>
+        </div>
+      </div>
+      <div class="key" aria-hidden="true">
+        <span><svg width="22" height="22"><circle cx="11" cy="11" r="9" fill="#00703c"/></svg>Completed</span>
+        <span><svg width="22" height="22"><circle cx="11" cy="11" r="10" fill="#ffdd00"/><circle cx="11" cy="11" r="7" fill="#0b0c0c"/></svg>You are here</span>
+        <span><svg width="22" height="22"><circle cx="11" cy="11" r="8" fill="#fff" stroke="#0b0c0c" stroke-width="2"/></svg>Quest</span>
+        <span><svg width="22" height="22"><path d="M11 2l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L2.4 8.3l6-.7z" fill="#fff" stroke="#0b0c0c" stroke-width="2"/></svg>Side quest (optional)</span>
+        <span><svg width="34" height="22"><path d="M2 11h26" stroke="#1d70b8" stroke-width="4" stroke-dasharray="6 5"/><path d="M26 5l7 6-7 6z" fill="#1d70b8"/></svg>Loop back</span>
+      </div>
+      <p class="body-s" style="margin-top:10px">Select a quest or side quest on the map or in the list below.</p>
+    </section>
+
+    <section aria-labelledby="steps-h">
+      <h2 id="steps-h">Step by step</h2>
+      <p class="body-s">You move on from each world when you meet its goals. Progress is measured by XP, quests completed and how you rate yourself.</p>
+      <ol class="steps" id="steps"></ol>
+    </section>
+  </div>
+</main>
+
+<div id="jq-foot"></div>
+
+<script src="jq.js"></script>
+</body>
+</html>
+<script>
+JQ.chrome('map.html');
+/* ---- Edit the journey here. Add, remove or rename quests and the map re-spaces itself. ---- */
+const WORLDS = JQ.WORLDS;
+const FINISH = 'Job offer';
+const XP_QUEST = 100, XP_SIDE = 50;
+
+const BLACK = '#0b0c0c', YELLOW = '#ffdd00', GREEN = '#00703c', RED = '#d4351c', BLUE = '#1d70b8', PURPLE = '#4c2c92';
+const FONT = "arial, 'Helvetica Neue', Helvetica, sans-serif";
+const svg = document.getElementById('map');
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+const ROUTE = [
+  [70, 615], [170, 560], [270, 630], [360, 560],
+  [420, 480], [520, 525], [640, 450], [730, 500],
+  [800, 410], [880, 350], [990, 410], [1110, 340],
+  [1190, 280], [1270, 300], [1380, 240], [1470, 268],
+  [1555, 205]
+];
+const TERRAIN = [[0,500],[200,482],[380,452],[480,402],[650,382],[800,342],[900,296],[1050,272],[1200,222],[1300,192],[1450,160],[1600,120]];
+function topY(x) {
+  for (let i = 0; i < TERRAIN.length - 1; i++) {
+    const [x0, y0] = TERRAIN[i], [x1, y1] = TERRAIN[i + 1];
+    if (x >= x0 && x <= x1) { const t = (1 - Math.cos(Math.PI * (x - x0) / (x1 - x0))) / 2; return y0 + (y1 - y0) * t; }
+  }
+  return TERRAIN[TERRAIN.length - 1][1];
+}
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rand = rng(1215);
+
+/* ---------- Flat scenery ---------- */
+const puff = (x, y, s, fill, parts) => parts.map(([dx, dy, r]) => `<circle cx="${x + dx * s}" cy="${y + dy * s}" r="${r * s}" fill="${fill}"/>`).join('');
+const cloud = (x, y, s = 1) => puff(x, y, s, '#ffffff', [[0,0,20],[24,-12,25],[50,0,20],[25,4,19]]);
+const bush = (x, y, s = 1, fill = '#4f8a2e') => puff(x, y, s, fill, [[0,0,14],[18,-8,17],[36,0,14]]);
+function hill(x, base, w, h, fill, eyes) {
+  const k = h * 1.33;
+  let g = `<path d="M${x - w/2},${base} C${x - w/2},${base - k} ${x + w/2},${base - k} ${x + w/2},${base} Z" fill="${fill}"/>`;
+  if (eyes) g += `<ellipse cx="${x - 9}" cy="${base - h * .62}" rx="3.5" ry="8" fill="${BLACK}"/><ellipse cx="${x + 9}" cy="${base - h * .62}" rx="3.5" ry="8" fill="${BLACK}"/>`;
+  return g;
+}
+const tree = (x, y, s = 1, fill = GREEN) => `<g transform="translate(${x},${y}) scale(${s})"><rect x="-4" y="-26" width="8" height="26" fill="#6b4f2a"/><circle cx="0" cy="-42" r="19" fill="${fill}"/><path d="M0,-61 A19,19 0 0 1 0,-23 Z" fill="#000" opacity=".12"/></g>`;
+const pine = (x, y, s = 1) => `<g transform="translate(${x},${y}) scale(${s})"><rect x="-4" y="-12" width="8" height="12" fill="#6b4f2a"/><polygon points="-20,-12 0,-40 20,-12" fill="#005a30"/><polygon points="-16,-30 0,-56 16,-30" fill="${GREEN}"/><polygon points="-11,-46 0,-70 11,-46" fill="#28a197"/></g>`;
+function house(x, y, s = 1, roof = RED, sign) {
+  let g = `<g transform="translate(${x},${y}) scale(${s})"><rect x="-20" y="-30" width="40" height="30" fill="#ffffff"/><polygon points="-26,-30 0,-54 26,-30" fill="${roof}"/><rect x="-6" y="-16" width="12" height="16" fill="${BLACK}"/><rect x="8" y="-25" width="8" height="8" fill="${YELLOW}"/>`;
+  if (sign) g += `<line x1="0" y1="-56" x2="0" y2="-50" stroke="${BLACK}" stroke-width="3"/><rect x="-15" y="-76" width="30" height="20" fill="${BLACK}"/><text x="0" y="-61" font-family="${FONT}" font-weight="700" font-size="12" text-anchor="middle" fill="#ffffff">${sign}</text>`;
+  return g + '</g>';
+}
+function building(x, base, w, h, fill) {
+  let g = `<rect x="${x - w/2}" y="${base - h}" width="${w}" height="${h}" fill="${fill}"/>`;
+  const cols = Math.max(1, Math.floor((w - 10) / 14)), rows = Math.max(1, Math.floor((h - 16) / 18));
+  const startX = x - (cols * 14 - 6) / 2;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const lit = rand() > .4;
+    g += `<rect x="${startX + c * 14}" y="${base - h + 10 + r * 18}" width="8" height="10" fill="${lit ? YELLOW : '#ffffff'}" opacity="${lit ? 1 : .35}"/>`;
+  }
+  if (h > 150) g += `<line x1="${x}" y1="${base - h}" x2="${x}" y2="${base - h - 22}" stroke="${BLACK}" stroke-width="3"/><circle cx="${x}" cy="${base - h - 24}" r="4" fill="${RED}"/>`;
+  return g;
+}
+function mountain(x, base, w, h, fill) {
+  const ty = base - h;
+  return `<polygon points="${x - w/2},${base} ${x},${ty} ${x + w/2},${base}" fill="${fill}"/>` +
+    `<polygon points="${x - w*.13},${ty + h*.26} ${x},${ty} ${x + w*.13},${ty + h*.26} ${x + w*.05},${ty + h*.2} ${x - w*.01},${ty + h*.29} ${x - w*.07},${ty + h*.21}" fill="#ffffff"/>`;
+}
+const rock = (x, y, s = 1) => `<g transform="translate(${x},${y}) scale(${s})"><path d="M-18,0 L-14,-14 L-2,-22 L12,-16 L18,0 Z" fill="#505a5f"/><path d="M-2,-22 L12,-16 L18,0 L4,0 Z" fill="#000" opacity=".15"/></g>`;
+const postbox = (x, y) => `<g transform="translate(${x},${y})"><rect x="-3" y="-14" width="6" height="14" fill="${BLACK}"/><rect x="-11" y="-38" width="22" height="26" rx="10" fill="${RED}"/><rect x="-7" y="-30" width="14" height="3" fill="${BLACK}"/></g>`;
+const envelope = (x, y, r = 0) => `<g transform="translate(${x},${y}) rotate(${r})"><rect x="-13" y="-9" width="26" height="18" fill="#ffffff"/><path d="M-13,-9 L0,2 L13,-9" fill="none" stroke="${BLUE}" stroke-width="2.5" stroke-linejoin="round"/></g>`;
+const sun = (x, y) => `<circle cx="${x}" cy="${y}" r="34" fill="${YELLOW}"/><circle cx="${x - 10}" cy="${y - 4}" r="3.5" fill="${BLACK}"/><circle cx="${x + 10}" cy="${y - 4}" r="3.5" fill="${BLACK}"/><path d="M${x - 10},${y + 9} Q${x},${y + 17} ${x + 10},${y + 9}" fill="none" stroke="${BLACK}" stroke-width="3" stroke-linecap="round"/>`;
+function starPts(cx, cy, R, r = R * .45) {
+  let p = [];
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r : R; p.push(`${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`); }
+  return p.join(' ');
+}
+
+function castle(x, base, raised) {
+  const b = PURPLE, d = '#3a2170';
+  let g = `<g transform="translate(${x},${base})">`;
+  g += `<rect x="-48" y="-72" width="96" height="72" fill="${b}"/>`;
+  for (let i = 0; i < 5; i++) g += `<rect x="${-48 + i * 21}" y="-84" width="12" height="12" fill="${b}"/>`;
+  g += `<rect x="-20" y="-112" width="40" height="40" fill="${d}"/>`;
+  for (let i = 0; i < 3; i++) g += `<rect x="${-20 + i * 14}" y="-122" width="12" height="10" fill="${d}"/>`;
+  g += `<path d="M-14,0 L-14,-22 Q0,-38 14,-22 L14,0 Z" fill="${BLACK}"/>`;
+  g += `<rect x="-36" y="-56" width="10" height="14" fill="${YELLOW}"/><rect x="26" y="-56" width="10" height="14" fill="${YELLOW}"/><rect x="-5" y="-102" width="10" height="16" fill="${YELLOW}"/>`;
+  g += `<line x1="0" y1="-122" x2="0" y2="-164" stroke="${BLACK}" stroke-width="3"/>`;
+  g += raised ? `<polygon points="2,-164 34,-154 2,-144" fill="${YELLOW}" stroke="${BLACK}" stroke-width="2"/>` : `<polygon points="2,-140 24,-133 2,-126" fill="#ffffff" stroke="${BLACK}" stroke-width="2"/>`;
+  return g + '</g>';
+}
+function flagpole(x, y, raised, n) {
+  const fy = raised ? -82 : -34;
+  return `<g transform="translate(${x},${y})"><rect x="-10" y="-6" width="20" height="8" fill="${BLACK}"/>` +
+    `<line x1="0" y1="-6" x2="0" y2="-86" stroke="${BLACK}" stroke-width="4"/><circle cx="0" cy="-90" r="6" fill="${raised ? YELLOW : '#ffffff'}" stroke="${BLACK}" stroke-width="2"/>` +
+    `<polygon points="2,${fy} 38,${fy + 12} 2,${fy + 24}" fill="${raised ? YELLOW : '#ffffff'}" stroke="${BLACK}" stroke-width="2" stroke-linejoin="round"/>` +
+    `<text x="13" y="${fy + 17}" font-family="${FONT}" font-weight="700" font-size="12" fill="${BLACK}">${n}</text></g>`;
+}
+function banner(cx, n, name, loop) {
+  const w = 270, h = 46, x = cx - w / 2, y = 18;
+  let g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${BLACK}"/>` +
+    `<circle cx="${x + 26}" cy="${y + h/2}" r="15" fill="${YELLOW}"/>` +
+    `<text x="${x + 26}" y="${y + h/2 + 6}" font-family="${FONT}" font-weight="700" font-size="17" text-anchor="middle" fill="${BLACK}">${n}</text>` +
+    `<text x="${x + 52}" y="${y + h/2 + 7}" font-family="${FONT}" font-weight="700" font-size="20" fill="#ffffff">${name}</text>`;
+  if (loop) g += `<g transform="translate(${x + w - 26},${y + h/2})"><path d="M-9,4 A10,10 0 1 1 3,9" fill="none" stroke="${YELLOW}" stroke-width="3"/><path d="M-14,0 L-9,8 L-3,1 Z" fill="${YELLOW}"/></g>`;
+  return g;
+}
+function hero(x, y) {
+  return `<g transform="translate(${x},${y - 18})"><g class="hero-bob">` + JQ.figure(JQ.avatar()) + `</g></g>`;
+}
+
+/* Loop roads: dashed blue arcs back to an earlier world */
+const LOOPS = [
+  { d: 'M1440,292 C1420,540 1150,570 1050,400', label: ['Not this time? Back to searching', 'Trial and error is normal'], at: [1268, 512] },
+  { d: 'M940,415 C900,650 700,650 642,478', label: ['Tailor your CV for this job'], at: [790, 600] },
+  { d: 'M515,548 C480,705 300,705 245,652', label: ['CV missing something?', 'Revisit Know yourself'], at: [386, 668] },
+];
+function pill(cx, cy, lines) {
+  const w = Math.max(...lines.map(l => l.length)) * 7.8 + 24, h = lines.length * 19 + 12;
+  let g = `<rect x="${cx - w/2}" y="${cy - h/2}" width="${w}" height="${h}" fill="#ffffff" stroke="${BLUE}" stroke-width="2"/>`;
+  lines.forEach((l, i) => g += `<text x="${cx}" y="${cy - h/2 + 21 + i * 19}" font-family="${FONT}" font-weight="${i ? 400 : 700}" font-size="14" text-anchor="middle" fill="${i ? BLACK : BLUE}">${l}</text>`);
+  return g;
+}
+
+/* ---------- Road geometry ---------- */
+function seg(i) {
+  const p0 = ROUTE[Math.max(0, i - 1)], p1 = ROUTE[i], p2 = ROUTE[i + 1], p3 = ROUTE[Math.min(ROUTE.length - 1, i + 2)];
+  const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+  const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+  return `C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+}
+const worldD = WORLDS.map((_, k) => { let d = `M${ROUTE[4 * k][0]},${ROUTE[4 * k][1]}`; for (let i = 4 * k; i < 4 * k + 4; i++) d += ' ' + seg(i); return d; });
+const fullD = `M${ROUTE[0][0]},${ROUTE[0][1]} ` + ROUTE.slice(0, -1).map((_, i) => seg(i)).join(' ');
+
+function groundPath() { let d = `M0,${topY(0)}`; for (let x = 10; x <= 1600; x += 10) d += ` L${x},${topY(x).toFixed(1)}`; return d; }
+function staticLayer() {
+  const T = topY;
+  let g = `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bbd4ea"/><stop offset="1" stop-color="#eaf2f9"/></linearGradient>` +
+    `<linearGradient id="ground" x1="0" y1="0" x2="1" y2="0">` +
+    WORLDS.map((w, k) => `<stop offset="${k / 4 + (k ? .02 : 0)}" stop-color="${w.ground}"/><stop offset="${(k + 1) / 4 - (k < 3 ? .02 : 0)}" stop-color="${w.ground}"/>`).join('') +
+    `</linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${BLUE}"/></marker></defs>`;
+  g += `<rect width="1600" height="740" fill="url(#sky)"/>`;
+  g += sun(320, 150);
+  g += cloud(90, 140) + cloud(500, 120, .9) + cloud(660, 210, .7) + cloud(1000, 120, .6) + cloud(1350, 110, .55) + cloud(200, 290, .6);
+
+  g += mountain(1300, T(1300) + 30, 230, 150, '#6f72af') + mountain(1470, T(1470) + 30, 260, 120, PURPLE) + mountain(1390, T(1390) + 30, 180, 110, '#8f92c4');
+  [[830,46,120,'#5694ca'],[880,56,170,BLUE],[935,40,110,'#7fadd8'],[985,60,190,'#003078'],[1045,44,140,'#5694ca'],[1095,54,175,BLUE],[1150,46,120,'#7fadd8'],[1200,40,100,'#003078']]
+    .forEach(([x, w, h, c]) => { g += building(x, T(x) + 20, w, Math.min(h, T(x) + 20 - 100), c); });
+  g += hill(560, T(560) + 10, 260, 90, '#9bb565') + hill(740, T(740) + 10, 200, 70, '#8aa857');
+  g += house(470, T(470) + 2, .9, BLUE) + house(560, T(560) + 2, 1, RED, 'CV') + house(650, T(650) + 2, .85, PURPLE) + house(770, T(770) + 2, .9, '#f47738');
+  g += hill(80, T(80) + 10, 200, 150, '#6f9c45', true) + hill(250, T(250) + 10, 240, 210, '#5f8f3a', true) + hill(400, T(400) + 10, 160, 110, '#78a24b');
+  g += tree(180, T(180) + 4, 1.2) + tree(360, T(360) + 4, 1);
+
+  g += `<path d="${groundPath()} L1600,740 L0,740 Z" fill="url(#ground)"/>`;
+
+  g += tree(100, 545) + tree(40, 735, 1.4) + tree(160, 735, 1.2, '#4f8a2e');
+  g += bush(110, 715) + bush(370, 625, .8);
+  g += house(470, 650, 1.2, RED) + house(600, 615, 1.05, BLUE, 'CV') + house(720, 700, 1.3, PURPLE);
+  g += tree(790, 600) + bush(520, 595, .8);
+  [[875,560,70,110,'#7fadd8'],[1060,565,80,120,'#7fadd8'],[1170,520,60,150,BLUE]].forEach(([x, b, w, h, c]) => g += building(x, b, w, h, c));
+  [[830,745,90,140,'#003078'],[925,745,70,95,BLUE],[1015,745,96,110,'#003078'],[1110,745,80,160,'#2b5f99'],[1205,745,60,120,'#003078']].forEach(([x, b, w, h, c]) => g += building(x, b, w, h, c));
+  g += postbox(985, 470) + envelope(905, 300, -12) + envelope(1150, 230, -6);
+  g += pine(1235, 420) + pine(1320, 385, 1.1) + pine(1520, 340) + pine(1580, 330, .9);
+  g += pine(1225, 650, 1.6) + pine(1545, 610, 1.7) + pine(1480, 735, 1.6) + pine(1580, 735, 1.4);
+  g += rock(1275, 470) + rock(1520, 440, .9) + rock(1440, 680, 1.4);
+
+  // Loop roads (under the main road so their ends tuck in)
+  LOOPS.forEach(l => {
+    g += `<path d="${l.d}" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>`;
+    g += `<path d="${l.d}" fill="none" stroke="${BLUE}" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#arrow)"/>`;
+  });
+
+  g += `<path d="${fullD}" fill="none" stroke="${BLACK}" stroke-width="30" stroke-linecap="round"/>`;
+  g += `<path d="${fullD}" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>`;
+  g += `<path id="trail" d="${fullD}" fill="none" stroke="${YELLOW}" stroke-width="24" stroke-linecap="round"/>`;
+  g += `<path d="${fullD}" fill="none" stroke="${BLACK}" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 13" opacity=".35"/>`;
+  worldD.forEach((d, k) => g += `<path id="seg-${k}" d="${d}" fill="none" stroke="none"/>`);
+
+  LOOPS.forEach(l => g += pill(l.at[0], l.at[1], l.label));
+
+  const [sx, sy] = ROUTE[0];
+  g += `<circle cx="${sx}" cy="${sy}" r="16" fill="${BLACK}"/><rect x="${sx - 42}" y="${sy + 24}" width="84" height="44" fill="${BLACK}"/>` +
+    `<text x="${sx}" y="${sy + 42}" font-family="${FONT}" font-weight="700" font-size="14" text-anchor="middle" fill="#ffffff">Start</text>` +
+    `<text x="${sx}" y="${sy + 60}" font-family="${FONT}" font-size="12" text-anchor="middle" fill="${YELLOW}">quiz + avatar</text>`;
+  WORLDS.forEach((w, k) => g += banner(200 + 400 * k, k + 1, w.name, !!w.loop && k > 1));
+  return g;
+}
+svg.innerHTML = staticLayer() + '<g id="dyn"></g>';
+
+/* ---------- Quest positions ---------- */
+const stages = [], sides = [];
+const segLen = WORLDS.map((_, k) => document.getElementById('seg-' + k).getTotalLength());
+const offsets = segLen.map((_, k) => segLen.slice(0, k).reduce((a, b) => a + b, 0));
+WORLDS.forEach((w, k) => {
+  const path = document.getElementById('seg-' + k), n = w.stages.length, L = segLen[k];
+  w.stages.forEach((st, i) => {
+    const local = L * (i + 1) / (n + 1), p = path.getPointAtLength(local);
+    stages.push({ world: k, i, name: st.name, x: p.x, y: p.y, at: offsets[k] + local, code: `${k + 1}-${i + 1}` });
+  });
+  w.side.forEach((sq, j) => {
+    const l = L * sq.at, p = path.getPointAtLength(l), q = path.getPointAtLength(Math.min(L, l + 2));
+    let nx = -(q.y - p.y), ny = q.x - p.x; const m = Math.hypot(nx, ny) || 1; nx /= m; ny /= m;
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    sides.push({ world: k, j, name: sq.name, rx: p.x, ry: p.y, x: p.x + nx * 62, y: p.y + ny * 62, id: `s${k}-${j}` });
+  });
+});
+const TOTAL = stages.length;
+const trail = document.getElementById('trail');
+const fullLen = trail.getTotalLength();
+
+let cur = 4, sideDone = new Set();
+try {
+  const s = parseInt(localStorage.getItem('jq-gov2-cur'), 10); if (s >= 0 && s <= TOTAL) cur = s;
+  const sd = JSON.parse(localStorage.getItem('jq-gov2-side') || '[]'); if (Array.isArray(sd)) sideDone = new Set(sd);
+} catch (e) {}
+
+const worldStatus = k => {
+  const idx = stages.map((s, i) => s.world === k ? i : -1).filter(i => i >= 0);
+  if (idx.every(i => i < cur)) return 'done';
+  if (idx.some(i => i <= cur)) return 'now';
+  return 'todo';
+};
+const TAGS = { done: '<strong class="tag green">Completed</strong>', now: '<strong class="tag blue">In progress</strong>', todo: '<strong class="tag grey">Not started</strong>' };
+const xp = () => cur * XP_QUEST + sideDone.size * XP_SIDE;
+
+
+function go(i) { cur = i; render(); }
+function toggleSide(id) { sideDone.has(id) ? sideDone.delete(id) : sideDone.add(id); render(); }
+
+function render() {
+  try { localStorage.setItem('jq-gov2-cur', cur); localStorage.setItem('jq-gov2-side', JSON.stringify([...sideDone])); } catch (e) {}
+  const at = cur >= TOTAL ? fullLen : stages[cur].at;
+  trail.setAttribute('stroke-dasharray', `${at} ${fullLen + 40}`);
+
+  let g = '';
+  WORLDS.forEach((w, k) => {
+    if (k === WORLDS.length - 1) return;
+    const [x, y] = ROUTE[4 * (k + 1)];
+    g += flagpole(x + 26, y + 6, worldStatus(k) === 'done', k + 1);
+  });
+  g += castle(1555, 208, cur >= TOTAL);
+  g += `<rect x="1505" y="222" width="100" height="26" fill="${cur >= TOTAL ? YELLOW : BLACK}"/><text x="1555" y="240" font-family="${FONT}" font-weight="700" font-size="14" text-anchor="middle" fill="${cur >= TOTAL ? BLACK : '#ffffff'}">${FINISH}</text>`;
+
+  sides.forEach(s => {
+    const done = sideDone.has(s.id);
+    g += `<line x1="${s.rx}" y1="${s.ry}" x2="${s.x}" y2="${s.y}" stroke="${BLACK}" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>`;
+    g += `<g class="node" data-side="${s.id}" tabindex="0" role="button" aria-label="Side quest: ${esc(s.name)}${done ? ' (completed)' : ''}"><title>Side quest: ${esc(s.name)}</title>`;
+    g += `<polygon class="ring" points="${starPts(s.x, s.y, 22)}" fill="${done ? YELLOW : '#ffffff'}" stroke="${BLACK}" stroke-width="3" stroke-linejoin="round"/></g>`;
+  });
+
+  stages.forEach((s, idx) => {
+    const state = idx < cur ? 'done' : idx === cur ? 'now' : 'todo';
+    g += `<g class="node" data-i="${idx}" tabindex="0" role="button" aria-label="Quest ${s.code}: ${esc(s.name)}${state === 'done' ? ' (completed)' : state === 'now' ? ' (you are here)' : ''}"><title>${s.code} ${esc(s.name)}</title>`;
+    if (state === 'now') g += `<circle cx="${s.x}" cy="${s.y}" r="25" fill="${YELLOW}"/>`;
+    const fill = state === 'done' ? GREEN : state === 'now' ? BLACK : '#ffffff';
+    g += `<circle class="ring" cx="${s.x}" cy="${s.y}" r="18" fill="${fill}" stroke="${BLACK}" stroke-width="${state === 'todo' ? 3 : 0}"/>`;
+    g += state === 'done'
+      ? `<path d="M${s.x - 7},${s.y} l5,5 l10,-11" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="square" pointer-events="none"/>`
+      : `<text x="${s.x}" y="${s.y + 5}" font-family="${FONT}" font-weight="700" font-size="13" text-anchor="middle" fill="${state === 'now' ? '#ffffff' : BLACK}" pointer-events="none">${s.code}</text>`;
+    g += `</g>`;
+  });
+  const hp = cur >= TOTAL ? { x: 1555, y: 196 } : stages[cur];
+  g += `<g pointer-events="none">${hero(hp.x, hp.y - 22)}</g>`;
+  document.getElementById('dyn').innerHTML = g;
+
+  // Progress
+  document.getElementById('p-count').textContent = `${cur} of ${TOTAL} quests completed`;
+  document.getElementById('p-xp').textContent = `${xp()} XP`;
+  document.getElementById('meter').style.width = (cur / TOTAL * 100) + '%';
+  document.getElementById('p-now').textContent = cur >= TOTAL
+    ? 'You have completed every quest. Well done, the job offer is yours.'
+    : `You are on quest ${stages[cur].code}: ${stages[cur].name} (${WORLDS[stages[cur].world].name}).`;
+  document.getElementById('prev').disabled = cur <= 0;
+  document.getElementById('next').disabled = cur >= TOTAL;
+
+  // Player summary
+  const av = JQ.avatar();
+  document.getElementById('mini').innerHTML = `<div style="display:flex;gap:12px;align-items:center">${JQ.avatarSvg(av, 64, '#bbd4ea')}<div><strong>${JQ.esc(av.name)}</strong><br><span class="body-s">Level ${Math.floor(xp() / JQ.XP_LEVEL) + 1} · ${xp()} XP</span></div></div>`;
+
+  // Step by step
+  let idx = 0;
+  const steps = WORLDS.map((w, k) => {
+    const st = worldStatus(k);
+    let items = w.stages.map((q, i) => {
+      const my = idx++;
+      const s = my < cur ? 'done' : my === cur ? 'now' : 'todo';
+      return `<li><span><span class="code">${k + 1}-${i + 1}</span><button class="linkbtn" type="button" data-i="${my}">${esc(q.name)}</button>${q.note ? `<span class="task-note">${esc(q.note)}</span>` : ''}${q.link ? `<span class="task-note">${q.link.href ? `<a href="${q.link.href}"${q.link.internal ? '' : ' target="_blank" rel="noopener"'}>${esc(q.link.text)}${q.link.internal ? '' : ' (opens in new tab)'}</a>` : esc(q.link.text)}</span>` : ''}</span>${TAGS[s]}</li>`;
+    }).join('');
+    items += w.side.map((q, j) => {
+      const id = `s${k}-${j}`, done = sideDone.has(id);
+      return `<li class="side"><span><span class="code">Side</span><button class="linkbtn" type="button" data-side="${id}">${esc(q.name)}</button><span class="task-note">${q.note ? esc(q.note) + '. ' : ''}Optional, +${XP_SIDE} XP</span></span>${done ? '<strong class="tag green">Completed</strong>' : '<strong class="tag yellow">Optional</strong>'}</li>`;
+    }).join('');
+    const gate = `<div class="inset"><strong>Now you should</strong><ul>${w.gate.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+    const loop = w.loop ? `<div class="inset loop"><strong>Loop back</strong>${esc(w.loop)}</div>` : '';
+    return `<li class="step ${st}"><span class="num" aria-hidden="true">${k + 1}</span><div class="step-head"><div><h3>${w.name}</h3><div class="place">${w.place}${w.owner ? ' · ' + w.owner : ''}</div></div>${TAGS[st]}</div><ul class="tasks">${items}</ul>${gate}${loop}</li>`;
+  }).join('');
+  const finalSt = cur >= TOTAL ? 'done' : '';
+  document.getElementById('steps').innerHTML = steps +
+    `<li class="step final ${finalSt}"><span class="num" aria-hidden="true">★</span><div class="step-head"><div><h3>Get the job</h3><div class="place">The castle at the end of the road</div></div>${cur >= TOTAL ? TAGS.done : TAGS.todo}</div><ul class="tasks">${JQ.FINISH_STEPS.map(t => `<li><span>${t}</span></li>`).join('')}</ul><div class="buttons" style="margin-top:15px"><a class="btn secondary" href="profile.html#share">Share your news and tips</a></div></li>`;
+}
+
+function handle(e) {
+  const t = e.target.closest('[data-i],[data-side]'); if (!t) return false;
+  if (t.dataset.side) toggleSide(t.dataset.side); else go(+t.dataset.i);
+  return t;
+}
+document.getElementById('dyn').addEventListener('click', handle);
+document.getElementById('dyn').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  e.preventDefault();
+  const t = handle(e); if (!t) return;
+  const sel = t.dataset.side ? `[data-side="${t.dataset.side}"]` : `[data-i="${t.dataset.i}"]`;
+  svg.querySelector(sel)?.focus();
+});
+document.getElementById('steps').addEventListener('click', handle);
+document.getElementById('prev').addEventListener('click', () => { if (cur > 0) go(cur - 1); });
+document.getElementById('next').addEventListener('click', () => { if (cur < TOTAL) go(cur + 1); });
+render();
+</script>

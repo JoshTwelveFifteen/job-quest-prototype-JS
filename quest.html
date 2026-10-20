@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The quest – Job Quest</title>
+<link rel="stylesheet" href="jq.css">
+<style>
+.hero { background: var(--link); color: var(--white); }
+.hero .width { padding-block: 40px; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 30px; align-items: center; }
+@media (max-width: 760px) { .hero .width { grid-template-columns: 1fr; } .hero svg.scene { max-width: 360px; } }
+.hero h1 { color: var(--white); }
+.hero .lead { color: var(--white); }
+.hero .btn.start { background: var(--white); color: var(--link); box-shadow: 0 2px 0 #144e81; margin-top: 25px; }
+.hero .btn.start:hover { background: #f0f4f5; color: var(--link); }
+.hero svg.scene { width: 100%; height: auto; display: block; }
+.build h3 { display: flex; gap: 10px; align-items: center; }
+.build svg { flex: none; }
+.worlds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 20px; }
+.worlds li { border: 1px solid var(--border); display: grid; align-content: start; min-width: 0; }
+.worlds .pic { height: 110px; display: block; width: 100%; }
+.worlds .txt { padding: 15px; display: grid; gap: 6px; }
+.worlds .n { font-weight: 700; font-size: 16px; color: var(--secondary); }
+.worlds h3 { margin: 0; font-size: 21px; }
+.worlds p { margin: 0; font-size: 16px; }
+.worlds li.here { border: 4px solid var(--text); }
+.expect { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px 30px; list-style: none; padding: 0; margin: 0; }
+.expect li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: start; }
+.expect strong { display: block; }
+.expect span { font-size: 16px; color: var(--secondary); }
+</style>
+</head>
+<body>
+<div id="jq-top"></div>
+
+<div class="hero">
+  <div class="width">
+    <div>
+      <p class="caption" style="color:#fff;opacity:.85">The Job Quest</p>
+      <h1>Level up your job search</h1>
+      <p class="lead">A step-by-step game that helps you build the knowledge, skills and confidence to get a job, and find the career that suits you best.</p>
+      <a class="btn start" href="#placement">Start the quest</a>
+    </div>
+    <svg class="scene" viewBox="0 0 360 220" aria-hidden="true">
+      <rect width="360" height="220" fill="#bbd4ea"/>
+      <circle cx="300" cy="50" r="24" fill="#ffdd00"/>
+      <path d="M0,170 C60,150 90,160 130,150 C180,138 210,120 260,105 C300,94 330,80 360,70 L360,220 L0,220 Z" fill="#8fae55"/>
+      <path d="M150,148 C190,136 220,118 270,102 C305,92 330,80 360,70 L360,220 L150,220 Z" fill="#b1b4b6"/>
+      <path d="M260,104 C300,94 330,80 360,70 L360,220 L260,220 Z" fill="#c9a46a"/>
+      <polygon points="300,96 330,40 360,96" fill="#4c2c92"/><polygon points="322,55 330,40 338,55 333,52 328,57" fill="#fff"/>
+      <rect x="190" y="70" width="22" height="70" fill="#1d70b8"/><rect x="214" y="90" width="18" height="50" fill="#003078"/><rect x="170" y="95" width="18" height="48" fill="#5694ca"/>
+      <circle cx="60" cy="140" r="14" fill="#00703c"/><rect x="57" y="150" width="6" height="12" fill="#6b4f2a"/>
+      <path d="M20,200 C80,190 110,205 160,180 C210,155 250,150 300,120" fill="none" stroke="#0b0c0c" stroke-width="16" stroke-linecap="round"/>
+      <path d="M20,200 C80,190 110,205 160,180 C210,155 250,150 300,120" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+      <path d="M20,200 C80,190 110,205 160,180" fill="none" stroke="#ffdd00" stroke-width="11" stroke-linecap="round"/>
+      <g id="hero-fig" transform="translate(160,168) scale(1.2)"></g>
+    </svg>
+  </div>
+</div>
+
+<main>
+  <div class="width">
+    <section aria-labelledby="what-h">
+      <h2 id="what-h">What is the quest?</h2>
+      <p>The Job Quest turns getting a job into a journey you can see. You travel through 4 worlds, from getting to know yourself to your first interviews. Each world is made of short quests. Complete them to earn XP and trophies, unlock the next world and see how far you have come.</p>
+      <p>You choose your pace. You can go back to any quest at any time, and you are never on your own.</p>
+    </section>
+
+    <section aria-labelledby="build-h">
+      <h2 id="build-h">What you will build</h2>
+      <div class="cards build">
+        <div class="card"><h3><svg width="30" height="30" viewBox="0 0 30 30"><rect x="4" y="5" width="22" height="20" fill="#1d70b8"/><rect x="8" y="10" width="14" height="3" fill="#fff"/><rect x="8" y="16" width="10" height="3" fill="#fff"/></svg>Knowledge</h3><p>About yourself, the careers out there and how the job market works. Understand what a job spec is really asking for.</p></div>
+        <div class="card"><h3><svg width="30" height="30" viewBox="0 0 30 30"><polygon points="15,3 18.5,11 27,11.5 20.5,17 22.5,26 15,21.5 7.5,26 9.5,17 3,11.5 11.5,11" fill="#ffdd00" stroke="#0b0c0c" stroke-width="2"/></svg>Skills</h3><p>Writing a CV, searching and applying for jobs, tests and interviews. Your scores improve as you practise.</p></div>
+        <div class="card"><h3><svg width="30" height="30" viewBox="0 0 30 30"><rect x="5" y="10" width="20" height="15" rx="2" fill="#6b4f2a"/><path d="M11,10 V6 H19 V10" fill="none" stroke="#0b0c0c" stroke-width="3"/></svg>Work readiness</h3><p>What employers expect, from being on time and what to wear to talking about yourself with confidence.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="career-h" class="inset" style="border-left-color:var(--focus)">
+      <h2 id="career-h">Find the career that is best for you</h2>
+      <p>Not sure what you want to do? That is where most people start. In the first world you will find your personality type, map your skills and interests, and get career suggestions that fit you. Deep dives show what each job is really like and the steps to get there.</p>
+    </section>
+
+    <section aria-labelledby="worlds-h">
+      <h2 id="worlds-h">The 4 worlds</h2>
+      <ul class="worlds" id="worlds"></ul>
+    </section>
+
+    <section aria-labelledby="expect-h">
+      <h2 id="expect-h">What to expect</h2>
+      <ul class="expect">
+        <li><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#ffdd00" stroke="#0b0c0c" stroke-width="2"/><text x="20" y="25" font-family="arial" font-weight="700" font-size="12" text-anchor="middle">XP</text></svg><div><strong>Earn XP for every quest</strong><span>100 XP for each quest and 50 XP for optional side quests. Level up as you go.</span></div></li>
+        <li><svg width="40" height="40" viewBox="0 0 40 40"><path d="M12,8 H28 V16 A8,8 0 0 1 12,16 Z" fill="#ffdd00" stroke="#0b0c0c" stroke-width="2"/><rect x="17" y="24" width="6" height="6" fill="#0b0c0c"/><rect x="12" y="30" width="16" height="4" fill="#0b0c0c"/></svg><div><strong>Collect trophies</strong><span>For milestones like finishing your CV or your first practice interview.</span></div></li>
+        <li><svg width="40" height="40" viewBox="0 0 40 40"><path d="M10,24 A11,11 0 1 1 22,31" fill="none" stroke="#1d70b8" stroke-width="4" stroke-dasharray="6 4"/><path d="M5,20 L10,28 L16,21 Z" fill="#1d70b8"/></svg><div><strong>Loops are normal</strong><span>You might apply, interview and improve your CV a few times. Each loop makes you stronger.</span></div></li>
+        <li><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="14" cy="14" r="6" fill="#0b0c0c"/><path d="M4,34 C4,24 24,24 24,34 Z" fill="#0b0c0c"/><circle cx="28" cy="16" r="5" fill="#1d70b8"/><path d="M20,34 C20,26 36,26 36,34 Z" fill="#1d70b8"/></svg><div><strong>You are not on your own</strong><span>See how people like you are getting on, and talk to a careers adviser face to face if you get stuck.</span></div></li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="placement-h" id="placement">
+      <form id="place-form" novalidate>
+        <fieldset>
+          <legend><h2 id="placement-h">We have put you here. Do you agree?</h2></legend>
+          <p class="hint" id="place-hint">Based on your quiz answers, we think you should start in the world marked "Recommended". You can choose somewhere else, or start at the beginning to build up your XP.</p>
+          <div class="radios" id="place-radios"></div>
+        </fieldset>
+        <div class="buttons">
+          <button class="btn" type="submit">Confirm and create your avatar</button>
+          <a href="map.html">See the quest map first</a>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>
+<div id="jq-foot"></div>
+
+<script src="jq.js"></script>
+<script>
+JQ.chrome('quest.html');
+document.getElementById('hero-fig').innerHTML = JQ.figure(JQ.avatar());
+const rec = JQ.SEGMENTS[JQ.segmentFor(JQ.answers())].world;
+if (!JQ.answers()) document.getElementById('place-hint').insertAdjacentHTML('beforeend', ' You have not taken the quiz yet, so this uses example answers.');
+
+const BLURB = [
+  'Find your strengths, skills and interests, and the careers that match.',
+  'Build your Core CV: personal statement, experience and qualifications, then feedback.',
+  'Find jobs that suit you, check they are right for you, then apply and track them.',
+  'Know what to expect, structure your answers and practise. Then get the job.',
+];
+const PICS = [
+  `<rect width="220" height="110" fill="#bbd4ea"/><path d="M0,80 C60,70 140,90 220,75 L220,110 L0,110Z" fill="#8fae55"/><path d="M40,82 C40,40 110,40 110,82Z" fill="#5f8f3a"/><ellipse cx="68" cy="62" rx="2.5" ry="6" fill="#0b0c0c"/><ellipse cx="82" cy="62" rx="2.5" ry="6" fill="#0b0c0c"/><circle cx="160" cy="55" r="16" fill="#00703c"/><rect x="157" y="66" width="6" height="14" fill="#6b4f2a"/><circle cx="190" cy="25" r="12" fill="#ffdd00"/>`,
+  `<rect width="220" height="110" fill="#bbd4ea"/><path d="M0,85 L220,80 L220,110 L0,110Z" fill="#b3c27a"/><rect x="40" y="55" width="40" height="30" fill="#fff"/><polygon points="34,55 60,32 86,55" fill="#d4351c"/><rect x="54" y="70" width="12" height="15" fill="#0b0c0c"/><rect x="120" y="58" width="40" height="27" fill="#fff"/><polygon points="114,58 140,36 166,58" fill="#1d70b8"/><rect x="125" y="14" width="30" height="20" fill="#0b0c0c"/><text x="140" y="29" font-family="arial" font-weight="700" font-size="12" fill="#fff" text-anchor="middle">CV</text>`,
+  `<rect width="220" height="110" fill="#bbd4ea"/><rect x="20" y="30" width="34" height="80" fill="#1d70b8"/><rect x="58" y="50" width="30" height="60" fill="#5694ca"/><rect x="92" y="15" width="38" height="95" fill="#003078"/><rect x="134" y="45" width="32" height="65" fill="#1d70b8"/><rect x="170" y="35" width="30" height="75" fill="#5694ca"/><g fill="#ffdd00"><rect x="28" y="40" width="6" height="8"/><rect x="40" y="56" width="6" height="8"/><rect x="100" y="28" width="6" height="8"/><rect x="114" y="46" width="6" height="8"/><rect x="142" y="60" width="6" height="8"/><rect x="178" y="48" width="6" height="8"/></g><rect x="60" y="20" width="22" height="15" fill="#fff" transform="rotate(-10 71 27)"/>`,
+  `<rect width="220" height="110" fill="#bbd4ea"/><polygon points="20,110 80,25 140,110" fill="#6f72af"/><polygon points="70,40 80,25 90,40 84,37 78,42" fill="#fff"/><polygon points="100,110 160,40 220,110" fill="#4c2c92"/><polygon points="151,52 160,40 169,52 163,49 157,54" fill="#fff"/><path d="M0,95 L220,88 L220,110 L0,110Z" fill="#c9a46a"/><rect x="170" y="62" width="34" height="30" fill="#4c2c92"/><rect x="180" y="48" width="14" height="14" fill="#3a2170"/><line x1="187" y1="48" x2="187" y2="30" stroke="#0b0c0c" stroke-width="2"/><polygon points="188,30 202,35 188,40" fill="#ffdd00"/>`,
+];
+document.getElementById('worlds').innerHTML = JQ.WORLDS.map((w, k) =>
+  `<li class="${k === rec ? 'here' : ''}"><svg class="pic" viewBox="0 0 220 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${PICS[k]}</svg>` +
+  `<div class="txt"><span class="n">World ${k + 1}${w.owner ? ' · ' + w.owner : ''}</span><h3>${w.name}</h3><p>${BLURB[k]}</p><p class="muted">${w.stages.length} quests${w.side.length ? ` and ${w.side.length} side quest` : ''}${w.loop ? ' · can loop back' : ''}</p>${k === rec ? '<strong class="tag yellow" style="justify-self:start">You start here</strong>' : ''}</div></li>`).join('');
+
+const opts = JQ.WORLDS.map((w, k) => ({ v: k, t: `World ${k + 1}: ${w.name}`, h: k === rec ? 'Recommended for you' : '' }));
+opts.unshift({ v: 'begin', t: 'Start at the beginning', h: 'Do every world to build your XP and strength' });
+document.getElementById('place-radios').innerHTML = opts.map((o, i) =>
+  `<div class="radio"><input type="radio" id="place-${i}" name="place" value="${o.v}"${o.v === rec ? ' checked' : ''}><label for="place-${i}">${o.t}${o.h ? `<span class="rh">${o.h}</span>` : ''}</label></div>`).join('');
+
+document.getElementById('place-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = new FormData(e.target).get('place');
+  const world = v === 'begin' || v == null ? 0 : +v;
+  JQ.setProgress(JQ.firstOfWorld(world));
+  location.href = 'profile.html#avatar';
+});
+</script>
+</body>
+</html>

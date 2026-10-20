@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your profile – Job Quest</title>
+<link rel="stylesheet" href="jq.css">
+<style>
+.top { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 30px; align-items: start; }
+@media (max-width: 760px) { .top { grid-template-columns: 1fr; } }
+.player { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; }
+@media (max-width: 480px) { .player { grid-template-columns: 1fr; } }
+.player h1 { margin: 0 0 6px; }
+.lvl { font-size: 24px; font-weight: 700; margin: 0 0 12px; }
+.xpline { display: flex; justify-content: space-between; gap: 10px; font-size: 16px; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 25px; border-top: 1px solid var(--border); }
+@media (max-width: 480px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stats div { padding: 12px 10px 0 0; }
+.stats strong { display: block; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 16px; color: var(--secondary); }
+.now { background: var(--text); color: var(--white); padding: 20px; display: grid; gap: 10px; }
+.now .k { font-size: 16px; color: var(--focus); font-weight: 700; }
+.now h2 { margin: 0; font-size: 27px; }
+.now p { margin: 0; font-size: 16px; color: #dfe1e2; }
+.now .btn { justify-self: start; background: var(--focus); color: var(--text); box-shadow: 0 2px 0 #8a7a00; }
+.now .btn:hover { background: #ffe94d; color: var(--text); }
+.now a.alt { color: var(--white); font-size: 16px; }
+
+.builder { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 30px; align-items: start; }
+@media (max-width: 640px) { .builder { grid-template-columns: 1fr; } }
+.preview { background: #bbd4ea; padding: 10px; display: grid; place-items: center; }
+.opt-group { margin-bottom: 20px; }
+.opt-group legend { font-weight: 700; margin-bottom: 8px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 12px; }
+.swatches input { appearance: none; -webkit-appearance: none; width: 40px; height: 40px; border-radius: 50%; margin: 0; cursor: pointer; border: 2px solid var(--text); }
+.swatches input:checked { box-shadow: 0 0 0 3px var(--white), 0 0 0 7px var(--text); }
+.swatches input:focus-visible { outline: 3px solid var(--focus); outline-offset: 7px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chips label { border: 2px solid var(--text); padding: 6px 12px; cursor: pointer; font-size: 16px; }
+.chips input:checked + label { background: var(--text); color: var(--white); }
+.chips input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 0; }
+.saved { color: var(--green); font-weight: 700; }
+
+.skills { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; max-width: 640px; }
+.skills li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 15px; align-items: center; }
+.skills .pips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.skills .pips i { height: 12px; background: var(--bg-grey); }
+.skills .pips i.on { background: var(--green); }
+.skills .lv { font-size: 16px; color: var(--secondary); font-variant-numeric: tabular-nums; }
+
+.trophies { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+.trophies li { border: 1px solid var(--border); padding: 15px 12px; text-align: center; display: grid; gap: 6px; justify-items: center; align-content: start; }
+.trophies li.got { border: 3px solid var(--text); padding: 13px 10px; background: #fffbe0; }
+.trophies strong { font-size: 16px; }
+.trophies span { font-size: 14px; color: var(--secondary); }
+
+.social { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; align-items: start; }
+@media (max-width: 760px) { .social { grid-template-columns: 1fr; } }
+.people { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.people li { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.people .av { background: var(--bg-grey); border-radius: 50%; display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; }
+.people strong { display: block; }
+.people span { font-size: 16px; color: var(--secondary); }
+.match { font-weight: 700; font-size: 16px; text-align: right; white-space: nowrap; }
+.match .stars { color: var(--text); letter-spacing: 1px; display: block; }
+.feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.feed li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.feed .av { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-grey); display: grid; place-items: center; overflow: hidden; }
+.feed p { margin: 0 0 6px; font-size: 16px; }
+.feed time { font-size: 14px; color: var(--secondary); }
+.cheer { font: inherit; font-size: 14px; font-weight: 700; border: 2px solid var(--text); background: var(--white); padding: 3px 10px; cursor: pointer; margin-left: 10px; }
+.cheer[aria-pressed="true"] { background: var(--focus); }
+.cheer:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; box-shadow: inset 0 0 0 2px var(--text); }
+.board { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; margin-top: 10px; }
+.board th, .board td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--border); }
+.board .n { text-align: right; }
+.board tr.you td { font-weight: 700; background: #fff7bf; }
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; }
+</style>
+</head>
+<body>
+<div id="jq-top"></div>
+<main>
+  <div class="width">
+
+    <div class="top">
+      <section class="player" aria-label="Your player">
+        <div id="big-av"></div>
+        <div>
+          <p class="caption">Your profile</p>
+          <h1 id="pname">Player</h1>
+          <p class="lvl" id="plevel">Level 2 Explorer</p>
+          <div class="xpline"><span id="xp-total">400 XP</span><span id="xp-next">200 XP to level 3</span></div>
+          <div class="meter" aria-hidden="true"><i id="xp-bar"></i></div>
+        </div>
+      </section>
+      <aside class="now" aria-labelledby="now-h">
+        <span class="k">CURRENT QUEST</span>
+        <h2 id="now-h">2-1 Build your CV</h2>
+        <p id="now-world">World 2: Create a CV</p>
+        <a class="btn" href="map.html">Continue on the map</a>
+        <a class="alt" href="quest.html#placement">Change where you start</a>
+      </aside>
+    </div>
+    <div class="stats" id="stats"></div>
+
+    <section id="avatar" aria-labelledby="av-h">
+      <details id="av-details">
+        <summary><span id="av-h">Create or change your avatar</span></summary>
+        <div class="details-body">
+          <form id="av-form" class="builder" novalidate>
+            <div class="preview" id="av-preview"></div>
+            <div>
+              <div class="opt-group"><label class="label" for="av-name">Display name</label><p class="hint" style="margin-bottom:8px">Other players will see this. Do not use your full name.</p><input class="input" id="av-name" name="name" maxlength="20" autocomplete="off"></div>
+              <div id="av-opts"></div>
+              <div class="buttons"><button class="btn" type="submit">Save avatar</button><span class="saved" id="av-saved" role="status"></span></div>
+            </div>
+          </form>
+        </div>
+      </details>
+    </section>
+
+    <section aria-labelledby="det-h">
+      <div class="sec-head"><h2 id="det-h">Check your details</h2><strong class="tag" id="conf-tag"></strong></div>
+      <p>We set up your profile using your quiz answers. Check they are still right.</p>
+      <dl class="summary" id="details"></dl>
+      <div class="buttons" style="margin-top:20px" id="conf-btns"><button class="btn" type="button" id="confirm">Confirm these are right</button></div>
+    </section>
+
+    <section aria-labelledby="skills-h">
+      <h2 id="skills-h">Skills</h2>
+      <p class="muted body-s">Skills level up as you complete quests in each world.</p>
+      <ul class="skills" id="skills"></ul>
+    </section>
+
+    <section aria-labelledby="tro-h">
+      <div class="sec-head"><h2 id="tro-h">Trophies</h2><span class="muted" id="tro-count"></span></div>
+      <ul class="trophies" id="trophies"></ul>
+    </section>
+
+    <section aria-labelledby="soc-h">
+      <div class="sec-head"><h2 id="soc-h">Your community</h2><strong class="tag grey">Example people</strong></div>
+      <div class="social">
+        <div>
+          <h3>People like you</h3>
+          <p class="muted body-s">Matched on your quiz answers, skills and the jobs you are looking at.</p>
+          <ul class="people" id="people"></ul>
+          <h3 style="margin-top:30px">Leaderboard</h3>
+          <table class="board"><thead><tr><th>Player</th><th class="n">Quests</th><th class="n">XP</th></tr></thead><tbody id="board"></tbody></table>
+        </div>
+        <div>
+          <h3>Friends feed</h3>
+          <ul class="feed" id="feed"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="share" aria-labelledby="share-h" class="box">
+      <h2 id="share-h">Got the job? Tell your network</h2>
+      <p>Let people know your good news. You never know who else it might help.</p>
+      <div class="inset" style="background:var(--bg-grey);border-left-color:var(--focus);margin-bottom:15px" id="share-msg">I have just got a new job! I used the Job Quest to work out what I wanted to do, build my CV and practise for interviews.</div>
+      <div class="buttons" style="margin-bottom:30px"><button class="btn secondary" type="button" id="copy">Copy message</button><span class="saved" id="copied" role="status"></span></div>
+      <form id="tip-form" novalidate>
+        <label class="label" for="tip">Share a tip with the Job Quest community</label>
+        <p class="hint" id="tip-hint">What helped you most? Your tip appears in your friends' feed.</p>
+        <textarea class="input" id="tip" name="tip" rows="3" maxlength="280" aria-describedby="tip-hint" style="height:auto;max-width:34em;display:block;margin-bottom:15px"></textarea>
+        <button class="btn" type="submit">Post tip</button>
+      </form>
+    </section>
+  </div>
+</main>
+<div id="jq-foot"></div>
+
+<script src="jq.js"></script>
+<script>
+JQ.chrome('profile.html');
+const C = JQ.C, esc = JQ.esc;
+let av = JQ.avatar();
+const a = JQ.answers() || JQ.EXAMPLE_ANSWERS;
+const seg = JQ.SEGMENTS[JQ.segmentFor(JQ.answers())];
+
+/* Example community */
+const PEOPLE = [
+  { name: 'Priya', av: { suit: C.GREEN, skin: '#a86b45', hair: 'long', hairColour: C.BLACK }, seg: 'Builder', doing: 'Getting feedback on her CV', match: 92, quests: 13, xp: 1450 },
+  { name: 'Tom', av: { suit: C.RED, skin: '#f1c4a0', hair: 'short', hairColour: '#d8a93a' }, seg: 'Explorer', doing: 'Exploring careers in retail', match: 88, quests: 9, xp: 950 },
+  { name: 'Ade', av: { suit: C.PURPLE, skin: '#6b4329', hair: 'cap', hairColour: C.BLUE }, seg: 'Go-getter', doing: 'Applying for warehouse roles', match: 74, quests: 6, xp: 650 },
+  { name: 'Grace', av: { suit: C.BLUE, skin: '#d9a27a', hair: 'bun', hairColour: '#6b4f2a' }, seg: 'Explorer', doing: 'Finding her personality type', match: 70, quests: 3, xp: 300 },
+];
+const FEED = [
+  { who: 0, text: 'finished a practice interview and scored 7 out of 10', when: '20 minutes ago' },
+  { who: 2, text: 'got a job offer and shared a tip: <em>"Prepare one STAR story for each skill on the job spec."</em>', when: '1 hour ago' },
+  { who: 1, text: 'completed the side quest <strong>Stepping-stone roles</strong>', when: '3 hours ago' },
+  { who: 3, text: 'started the Job Quest. Say hello!', when: 'Yesterday' },
+];
+const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+function render() {
+  const p = JQ.progress(), tro = JQ.trophies();
+  document.getElementById('big-av').innerHTML = JQ.avatarSvg(av, 150, '#bbd4ea');
+  document.getElementById('pname').textContent = av.name;
+  document.getElementById('plevel').textContent = `Level ${p.level} ${seg.title}`;
+  document.getElementById('xp-total').textContent = `${p.xp} XP`;
+  document.getElementById('xp-next').textContent = `${JQ.XP_LEVEL - p.levelXp} XP to level ${p.level + 1}`;
+  document.getElementById('xp-bar').style.width = (p.levelXp / JQ.XP_LEVEL * 100) + '%';
+
+  if (p.stage) {
+    document.getElementById('now-h').textContent = `${p.stage.code} ${p.stage.name}`;
+    document.getElementById('now-world').textContent = `World ${p.stage.world + 1}: ${JQ.WORLDS[p.stage.world].name}`;
+  } else {
+    document.getElementById('now-h').textContent = 'Quest complete';
+    document.getElementById('now-world').textContent = 'You got the job. Congratulations!';
+  }
+  const got = tro.filter(t => t.got).length;
+  document.getElementById('stats').innerHTML =
+    [[p.xp, 'XP'], [p.cur, 'quests done'], [p.side.size, 'side quests'], [got, 'trophies']].map(([n, l]) => `<div><strong>${n}</strong><span>${l}</span></div>`).join('');
+
+  // Skills
+  const skills = JQ.WORLDS.map((w, k) => ({ name: w.skill, r: p.worldRatio[k] }));
+  skills.push({ name: 'Work readiness', r: p.cur / p.total });
+  document.getElementById('skills').innerHTML = skills.map(s => {
+    const lv = Math.round(s.r * 5);
+    return `<li><strong>${s.name}</strong><span class="lv">Level ${lv} of 5</span><span class="pips" aria-hidden="true">${[0,1,2,3,4].map(i => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</span></li>`;
+  }).join('');
+
+  // Trophies
+  document.getElementById('tro-count').textContent = `${got} of ${tro.length} collected`;
+  document.getElementById('trophies').innerHTML = tro.map(t =>
+    `<li class="${t.got ? 'got' : ''}"><svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">` +
+    (t.got
+      ? `<path d="M14,8 H38 V20 A12,12 0 0 1 14,20 Z" fill="${C.YELLOW}" stroke="${C.BLACK}" stroke-width="2.5"/><path d="M14,12 H7 V16 A7,7 0 0 0 14,22 M38,12 H45 V16 A7,7 0 0 1 38,22" fill="none" stroke="${C.BLACK}" stroke-width="2.5"/><rect x="22" y="31" width="8" height="8" fill="${C.BLACK}"/><rect x="15" y="39" width="22" height="6" fill="${C.BLACK}"/>`
+      : `<path d="M14,8 H38 V20 A12,12 0 0 1 14,20 Z" fill="#f3f2f1" stroke="#b1b4b6" stroke-width="2.5"/><rect x="22" y="31" width="8" height="8" fill="#b1b4b6"/><rect x="15" y="39" width="22" height="6" fill="#b1b4b6"/><rect x="21" y="13" width="10" height="8" fill="#b1b4b6"/><path d="M23,13 V10 A3,3 0 0 1 29,10 V13" fill="none" stroke="#b1b4b6" stroke-width="2"/>`) +
+    `</svg><strong>${t.name}</strong><span>${t.got ? 'Collected' : t.how}</span></li>`).join('');
+
+  // Community
+  document.getElementById('people').innerHTML = PEOPLE.map(m =>
+    `<li><span class="av">${JQ.avatarSvg(m.av, 56)}</span><span><strong>${m.name}</strong><span>${m.seg} · ${m.doing}</span></span><span class="match"><span class="stars" aria-hidden="true">${stars(Math.round(m.match / 20))}</span>${m.match}% match</span></li>`).join('');
+  const rows = [...PEOPLE.map(m => ({ name: m.name, quests: m.quests, xp: m.xp })), { name: `${av.name} (you)`, quests: p.cur + p.side.size, xp: p.xp, you: true }].sort((x, y) => y.xp - x.xp);
+  document.getElementById('board').innerHTML = rows.map((r, i) => `<tr class="${r.you ? 'you' : ''}"><td>${i + 1}. ${esc(r.name)}</td><td class="n">${r.quests}</td><td class="n">${r.xp}</td></tr>`).join('');
+  const cheers = JQ.store.get('jq-cheers', {});
+  const mine = JQ.store.get('jq-tips', []).slice().reverse().map(t => `<li><span class="av">${JQ.avatarSvg(av, 44)}</span><div><p><strong>${esc(av.name)} (you)</strong> shared a tip: <em>"${esc(t)}"</em></p><time>Just now</time></div></li>`).join('');
+  document.getElementById('feed').innerHTML = mine + FEED.map((f, i) => {
+    const m = PEOPLE[f.who], on = !!cheers[i];
+    return `<li><span class="av">${JQ.avatarSvg(m.av, 44)}</span><div><p><strong>${m.name}</strong> ${f.text}</p><time>${f.when}</time><button class="cheer" type="button" data-i="${i}" aria-pressed="${on}">${on ? 'Cheered' : 'Cheer'}</button></div></li>`;
+  }).join('');
+}
+
+/* Details confirmation */
+function renderDetails() {
+  const confirmed = JQ.store.get('jq-confirmed', false);
+  document.getElementById('details').innerHTML = JQ.QUESTIONS.map(q =>
+    `<div><dt>${q.q}</dt><dd>${JQ.label(q.id, a[q.id])}</dd><dd><a href="index.html">Change<span class="visually-hidden"> ${q.q.toLowerCase()}</span></a></dd></div>`).join('');
+  const tag = document.getElementById('conf-tag');
+  tag.className = 'tag ' + (confirmed ? 'green' : 'yellow');
+  tag.textContent = confirmed ? 'Confirmed' : 'Not confirmed yet';
+  document.getElementById('conf-btns').hidden = confirmed;
+}
+document.getElementById('confirm').addEventListener('click', () => { JQ.store.set('jq-confirmed', true); renderDetails(); });
+
+/* Avatar builder */
+const LABELS = { suit: 'Outfit colour', skin: 'Skin tone', hair: 'Hair', hairColour: 'Hair or cap colour' };
+function renderOpts() {
+  document.getElementById('av-opts').innerHTML = Object.entries(JQ.AVATAR_OPTIONS).map(([key, opts]) => {
+    const isText = key === 'hair';
+    return `<fieldset class="opt-group"><legend>${LABELS[key]}</legend><div class="${isText ? 'chips' : 'swatches'}">` +
+      opts.map(([v, t], i) => isText
+        ? `<input type="radio" id="${key}-${i}" name="${key}" value="${v}"${av[key] === v ? ' checked' : ''}><label for="${key}-${i}">${t}</label>`
+        : `<input type="radio" id="${key}-${i}" name="${key}" value="${v}" aria-label="${t}" title="${t}" style="background:${v}"${av[key] === v ? ' checked' : ''}>`).join('') +
+      `</div></fieldset>`;
+  }).join('');
+}
+const form = document.getElementById('av-form');
+function draft() {
+  const fd = new FormData(form), d = {};
+  for (const k of Object.keys(JQ.AVATAR_OPTIONS)) d[k] = fd.get(k) || av[k];
+  d.name = (fd.get('name') || '').trim() || 'Player';
+  return d;
+}
+form.addEventListener('input', () => { document.getElementById('av-preview').innerHTML = JQ.avatarSvg(draft(), 140); document.getElementById('av-saved').textContent = ''; });
+form.addEventListener('submit', e => {
+  e.preventDefault(); av = draft(); JQ.store.set('jq-avatar', av);
+  document.getElementById('av-saved').textContent = 'Avatar saved';
+  render();
+});
+document.getElementById('feed').addEventListener('click', e => {
+  const b = e.target.closest('.cheer'); if (!b) return;
+  const c = JQ.store.get('jq-cheers', {}); c[b.dataset.i] = !c[b.dataset.i]; JQ.store.set('jq-cheers', c); render();
+  document.querySelector(`.cheer[data-i="${b.dataset.i}"]`)?.focus();
+});
+
+document.getElementById('copy').addEventListener('click', () => {
+  const t = document.getElementById('share-msg').textContent, out = document.getElementById('copied');
+  const fallback = () => { const rg = document.createRange(); rg.selectNodeContents(document.getElementById('share-msg')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); out.textContent = 'Message selected. Copy it to share.'; };
+  try { navigator.clipboard.writeText(t).then(() => { out.textContent = 'Copied'; }, fallback); } catch (e) { fallback(); }
+});
+document.getElementById('tip-form').addEventListener('submit', e => {
+  e.preventDefault(); const el = document.getElementById('tip'), v = el.value.trim(); if (!v) { el.focus(); return; }
+  const tips = JQ.store.get('jq-tips', []); tips.push(v); JQ.store.set('jq-tips', tips); el.value = ''; render();
+  document.getElementById('feed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+document.getElementById('av-name').value = av.name === 'Player' ? '' : av.name;
+document.getElementById('av-name').placeholder = 'Player';
+renderOpts();
+document.getElementById('av-preview').innerHTML = JQ.avatarSvg(av, 140);
+if (location.hash === '#avatar' || !JQ.store.get('jq-avatar', null)) document.getElementById('av-details').open = true;
+renderDetails();
+render();
+</script>
+</body>
+</html>
