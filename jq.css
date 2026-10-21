@@ -136,3 +136,11 @@ details .details-body { margin-top: 10px; padding: 15px 15px 15px 20px; border-l
 
 @media (prefers-reduced-motion: reduce) { .meter > i { transition: none; } * { animation: none !important; } }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+/* Avatar link in the header */
+.nav { align-items: center; }
+.nav a.nav-avatar { padding: 0; border: 3px solid transparent; border-radius: 50%; display: block; line-height: 0; }
+.nav a.nav-avatar svg { display: block; border-radius: 50%; background: #bbd4ea; }
+.nav a.nav-avatar:hover { border-color: var(--white); }
+.nav a.nav-avatar[aria-current="page"] { border-color: var(--focus); }
+.header a.nav-avatar:focus-visible { background: none; box-shadow: none; border-color: var(--focus); outline: 3px solid var(--text); }

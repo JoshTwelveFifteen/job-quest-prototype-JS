@@ -281,6 +281,7 @@ form.addEventListener('submit', e => {
   e.preventDefault(); av = draft(); JQ.store.set('jq-avatar', av);
   document.getElementById('av-saved').textContent = 'Avatar saved';
   render();
+  JQ.chrome('profile.html');
 });
 document.getElementById('feed').addEventListener('click', e => {
   const b = e.target.closest('.cheer'); if (!b) return;

@@ -156,13 +156,14 @@
   }
 
   /* ---- Page chrome ---- */
-  const PAGES = [['index.html', 'Quiz'], ['quest.html', 'The quest'], ['map.html', 'Quest map'], ['applications.html', 'Applications'], ['profile.html', 'Profile']];
+  const PAGES = [['quest.html', 'The Quest'], ['map.html', 'Quest Map'], ['applications.html', 'Applications']];
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   function chrome(active) {
     const top = document.getElementById('jq-top');
     if (top) top.innerHTML =
       `<header class="header"><div class="width"><a class="service" href="index.html"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12" fill="#ffdd00"/><path d="M8 14.5l4 4 8-9" fill="none" stroke="#0b0c0c" stroke-width="3.5" stroke-linecap="square"/></svg>Job Quest</a>` +
-      `<nav aria-label="Service"><ul class="nav">${PAGES.map(([h, t]) => `<li><a href="${h}"${h === active ? ' aria-current="page"' : ''}>${t}</a></li>`).join('')}</ul></nav></div></header>` +
+      `<nav aria-label="Service"><ul class="nav">${PAGES.map(([h, t]) => `<li><a href="${h}"${h === active ? ' aria-current="page"' : ''}>${t}</a></li>`).join('')}` +
+      `<li><a class="nav-avatar" href="profile.html" title="Your profile"${active === 'profile.html' ? ' aria-current="page"' : ''}>${avatarSvg(avatar(), 36, '#bbd4ea')}<span class="visually-hidden">Your profile</span></a></li></ul></nav></div></header>` +
       `<div class="phase"><div class="width"><span class="tag blue">Prototype</span><span>This is a draft for discussion. Names, numbers and people shown are examples.</span></div></div>`;
     const foot = document.getElementById('jq-foot');
     if (foot) foot.innerHTML = `<footer class="footer"><div class="width"><span>Job Quest prototype</span><button class="linkbtn" type="button" id="jq-reset">Reset this prototype</button></div></footer>`;

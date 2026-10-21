@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quest map – Job Quest</title>
+<title>Quest Map – Job Quest</title>
 <link rel="stylesheet" href="jq.css">
 <style>
 /* Layout: public-service style page — black header bar, single column; "before the quest" flow, progress + leaderboard, illustrated map with loop roads, then step-by-step list. Single light theme by design. */
@@ -127,6 +127,19 @@ p { margin: 0; max-width: 34em; }
 .inset strong { display: block; margin-bottom: 4px; font-size: 16px; }
 .inset ul { margin: 0; padding-left: 20px; }
 .inset.loop { border-left-color: var(--link); }
+.steps-tools { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px 20px; margin-top: 15px; }
+.step-toggle { font: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; color: var(--text); display: block; width: 100%; }
+.step-toggle .t { display: block; font-size: 24px; font-weight: 700; line-height: 1.15; }
+.step-toggle .sh { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 16px; color: var(--link); text-decoration: underline; text-underline-offset: .15em; }
+.step-toggle .chev { width: 8px; height: 8px; border: solid currentColor; border-width: 2px 2px 0 0; transform: rotate(135deg); margin: -4px 4px 0 0; display: inline-block; transition: transform .2s; }
+.step-toggle[aria-expanded="true"] .chev { transform: rotate(-45deg); margin-top: 3px; }
+.step-toggle:hover .t { text-decoration: underline; }
+.step-toggle:hover .sh { text-decoration-thickness: 3px; }
+.step-toggle:focus-visible { outline: 3px solid transparent; background: var(--focus); box-shadow: 0 -2px var(--focus), 0 4px var(--text); }
+.step-head h3 { flex: 1 1 260px; min-width: 0; }
+.step-toggle .place { display: block; font-weight: 400; }
+.step-body[hidden] { display: none; }
+.tasks li.here { background: #fff7bf; box-shadow: inset 5px 0 0 var(--text); padding-left: 15px; padding-right: 10px; }
 
 .footer { background: var(--bg-grey); border-top: 1px solid var(--border); }
 .footer .width { padding-block: 25px 30px; font-size: 16px; color: var(--secondary); }
@@ -142,7 +155,7 @@ p { margin: 0; max-width: 34em; }
   <div class="width">
     <div>
       <p class="caption">The Job Quest</p>
-      <h1>Quest map</h1>
+      <h1>Quest Map</h1>
       <p class="lead">Take a short quiz, create your avatar, then work through 4 worlds. Earn XP for every quest. Some roads loop back, because applying, interviewing and improving your CV often happen more than once.</p>
     </div>
 
@@ -165,7 +178,7 @@ p { margin: 0; max-width: 34em; }
     </section>
 
     <section aria-labelledby="map-h">
-      <h2 id="map-h">Quest map</h2>
+      <h2 id="map-h">Quest Map</h2>
       <div class="map">
         <div class="map-scroll">
           <svg id="map" viewBox="0 0 1600 740" role="img" aria-label="Illustrated map of the job seeking journey through Know yourself, Create a CV, Search for jobs and Interviewing to a job offer, with loop roads from Interviewing back to Search for jobs, from Search for jobs back to Create a CV, and from Create a CV back to Know yourself"></svg>
@@ -184,6 +197,7 @@ p { margin: 0; max-width: 34em; }
     <section aria-labelledby="steps-h">
       <h2 id="steps-h">Step by step</h2>
       <p class="body-s">You move on from each world when you meet its goals. Progress is measured by XP, quests completed and how you rate yourself.</p>
+      <div class="steps-tools"><p class="body-s" id="steps-now" style="margin:0"></p><button class="linkbtn" type="button" id="toggle-all" aria-controls="steps">Show all steps</button></div>
       <ol class="steps" id="steps"></ol>
     </section>
   </div>
@@ -415,7 +429,14 @@ const TAGS = { done: '<strong class="tag green">Completed</strong>', now: '<stro
 const xp = () => cur * XP_QUEST + sideDone.size * XP_SIDE;
 
 
-function go(i) { cur = i; render(); }
+let openSteps = new Set(), lastWorld = null;
+function go(i) {
+  cur = i;
+  const w = cur >= TOTAL ? WORLDS.length : stages[cur].world;
+  if (w !== lastWorld) openSteps = new Set([w]); else openSteps.add(w);
+  lastWorld = w;
+  render();
+}
 function toggleSide(id) { sideDone.has(id) ? sideDone.delete(id) : sideDone.add(id); render(); }
 
 function render() {
@@ -468,14 +489,20 @@ function render() {
   const av = JQ.avatar();
   document.getElementById('mini').innerHTML = `<div style="display:flex;gap:12px;align-items:center">${JQ.avatarSvg(av, 64, '#bbd4ea')}<div><strong>${JQ.esc(av.name)}</strong><br><span class="body-s">Level ${Math.floor(xp() / JQ.XP_LEVEL) + 1} · ${xp()} XP</span></div></div>`;
 
-  // Step by step
+  // Step by step: the world the character is in opens automatically
+  const curWorld = cur >= TOTAL ? WORLDS.length : stages[cur].world;
+  if (lastWorld === null) { openSteps = new Set([curWorld]); lastWorld = curWorld; }
+  const allOpen = openSteps.size === WORLDS.length + 1;
+  document.getElementById('toggle-all').textContent = allOpen ? 'Hide all steps' : 'Show all steps';
+  document.getElementById('steps-now').textContent = cur >= TOTAL ? 'You have reached the end of the journey.' : `You are in World ${curWorld + 1}: ${WORLDS[curWorld].name}.`;
+  const head = (k, num, title, place, tag) => `<div class="step-head"><h3><button class="step-toggle" type="button" data-toggle="${k}" aria-expanded="${openSteps.has(k)}" aria-controls="step-body-${k}"><span class="t">${title}</span><span class="place">${place}</span><span class="sh"><i class="chev" aria-hidden="true"></i>${openSteps.has(k) ? 'Hide' : 'Show'}<span class="visually-hidden"> this step</span></span></button></h3>${tag}</div>`;
   let idx = 0;
   const steps = WORLDS.map((w, k) => {
     const st = worldStatus(k);
     let items = w.stages.map((q, i) => {
       const my = idx++;
       const s = my < cur ? 'done' : my === cur ? 'now' : 'todo';
-      return `<li><span><span class="code">${k + 1}-${i + 1}</span><button class="linkbtn" type="button" data-i="${my}">${esc(q.name)}</button>${q.note ? `<span class="task-note">${esc(q.note)}</span>` : ''}${q.link ? `<span class="task-note">${q.link.href ? `<a href="${q.link.href}"${q.link.internal ? '' : ' target="_blank" rel="noopener"'}>${esc(q.link.text)}${q.link.internal ? '' : ' (opens in new tab)'}</a>` : esc(q.link.text)}</span>` : ''}</span>${TAGS[s]}</li>`;
+      return `<li class="${s === 'now' ? 'here' : ''}"><span><span class="code">${k + 1}-${i + 1}</span><button class="linkbtn" type="button" data-i="${my}">${esc(q.name)}</button>${q.note ? `<span class="task-note">${esc(q.note)}</span>` : ''}${q.link ? `<span class="task-note">${q.link.href ? `<a href="${q.link.href}"${q.link.internal ? '' : ' target="_blank" rel="noopener"'}>${esc(q.link.text)}${q.link.internal ? '' : ' (opens in new tab)'}</a>` : esc(q.link.text)}</span>` : ''}</span>${s === 'now' ? '<strong class="tag yellow">You are here</strong>' : TAGS[s]}</li>`;
     }).join('');
     items += w.side.map((q, j) => {
       const id = `s${k}-${j}`, done = sideDone.has(id);
@@ -483,11 +510,11 @@ function render() {
     }).join('');
     const gate = `<div class="inset"><strong>Now you should</strong><ul>${w.gate.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
     const loop = w.loop ? `<div class="inset loop"><strong>Loop back</strong>${esc(w.loop)}</div>` : '';
-    return `<li class="step ${st}"><span class="num" aria-hidden="true">${k + 1}</span><div class="step-head"><div><h3>${w.name}</h3><div class="place">${w.place}${w.owner ? ' · ' + w.owner : ''}</div></div>${TAGS[st]}</div><ul class="tasks">${items}</ul>${gate}${loop}</li>`;
+    return `<li class="step ${st}"><span class="num" aria-hidden="true">${k + 1}</span>${head(k, k + 1, w.name, w.place, TAGS[st])}<div class="step-body" id="step-body-${k}"${openSteps.has(k) ? '' : ' hidden'}><ul class="tasks">${items}</ul>${gate}${loop}</div></li>`;
   }).join('');
   const finalSt = cur >= TOTAL ? 'done' : '';
   document.getElementById('steps').innerHTML = steps +
-    `<li class="step final ${finalSt}"><span class="num" aria-hidden="true">★</span><div class="step-head"><div><h3>Get the job</h3><div class="place">The castle at the end of the road</div></div>${cur >= TOTAL ? TAGS.done : TAGS.todo}</div><ul class="tasks">${JQ.FINISH_STEPS.map(t => `<li><span>${t}</span></li>`).join('')}</ul><div class="buttons" style="margin-top:15px"><a class="btn secondary" href="profile.html#share">Share your news and tips</a></div></li>`;
+    `<li class="step final ${finalSt}"><span class="num" aria-hidden="true">★</span>${head(WORLDS.length, '★', 'Get the job', 'The castle at the end of the road', cur >= TOTAL ? TAGS.done : TAGS.todo)}<div class="step-body" id="step-body-${WORLDS.length}"${openSteps.has(WORLDS.length) ? '' : ' hidden'}><ul class="tasks">${JQ.FINISH_STEPS.map(t => `<li><span>${t}</span></li>`).join('')}</ul><div class="buttons" style="margin-top:15px"><a class="btn secondary" href="profile.html#share">Share your news and tips</a></div></div></li>`;
 }
 
 function handle(e) {
@@ -503,7 +530,18 @@ document.getElementById('dyn').addEventListener('keydown', e => {
   const sel = t.dataset.side ? `[data-side="${t.dataset.side}"]` : `[data-i="${t.dataset.i}"]`;
   svg.querySelector(sel)?.focus();
 });
-document.getElementById('steps').addEventListener('click', handle);
+document.getElementById('steps').addEventListener('click', e => {
+  const t = e.target.closest('[data-toggle]');
+  if (!t) { handle(e); return; }
+  const k = +t.dataset.toggle;
+  openSteps.has(k) ? openSteps.delete(k) : openSteps.add(k);
+  render();
+  document.querySelector(`[data-toggle="${k}"]`)?.focus();
+});
+document.getElementById('toggle-all').addEventListener('click', () => {
+  openSteps = openSteps.size === WORLDS.length + 1 ? new Set() : new Set([...Array(WORLDS.length + 1).keys()]);
+  render();
+});
 document.getElementById('prev').addEventListener('click', () => { if (cur > 0) go(cur - 1); });
 document.getElementById('next').addEventListener('click', () => { if (cur < TOTAL) go(cur + 1); });
 render();
