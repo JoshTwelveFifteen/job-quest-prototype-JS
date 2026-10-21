@@ -6,16 +6,12 @@
 <title>Job Quest</title>
 <link rel="stylesheet" href="jq.css">
 <style>
-/* Landing: start page, then a one-question-per-screen quiz. */
+/* Landing: start page. Each quiz question is its own page (question-1.html to question-5.html). */
 .start-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 30px; align-items: start; }
 @media (max-width: 760px) { .start-grid { grid-template-columns: 1fr; } }
 .related { border-top: 2px solid var(--link); padding-top: 15px; font-size: 16px; }
 .related h2 { font-size: 24px; }
 .related ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.qprog { color: var(--secondary); margin: 0 0 5px; }
-.worlds-strip { display: flex; gap: 6px; align-items: center; margin: 20px 0 25px; flex-wrap: wrap; }
-.worlds-strip span { font-size: 16px; font-weight: 700; padding: 6px 10px; background: var(--bg-grey); }
-.worlds-strip i { width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 9px; border-color: transparent transparent transparent var(--secondary); }
 </style>
 </head>
 <body>
@@ -23,14 +19,9 @@
 <div id="jq-top"></div>
 <main id="main">
   <div class="width">
-
-    <div id="start" class="start-grid">
+    <div class="start-grid">
       <section>
-        <h1>Personalise your job search journey</h1>
-        <p class="lead" style="margin-bottom:20px">Answer 5 quick questions and we will show you where to start, the tools that can help, and how to take the Job Quest.</p>
-        <div class="worlds-strip" aria-label="The 4 parts of the journey">
-          <span>Know yourself</span><i></i><span>Create a CV</span><i></i><span>Search for jobs</span><i></i><span>Interviewing</span>
-        </div>
+        <h1>Answer 5 quick questions so that we can personalise the support we give you</h1>
         <p>We will ask about:</p>
         <ul class="list">
           <li>how confident you feel about finding work</li>
@@ -39,65 +30,24 @@
           <li>your CV and any interviews</li>
         </ul>
         <p>It takes about 2 minutes. There are no right or wrong answers.</p>
-        <div class="buttons" style="margin-top:25px"><button class="btn start" id="begin" type="button">Start now</button></div>
+        <div class="buttons" style="margin-top:25px"><a class="btn start" href="question-1.html" role="button" draggable="false">Start now</a></div>
       </section>
       <aside class="related" aria-labelledby="rel-h">
         <h2 id="rel-h">Already know what you need?</h2>
         <ul>
-          <li><a href="https://findajob.dwp.gov.uk/" target="_blank" rel="noopener">Find a job (opens in new tab)</a></li>
+          <li><a href="https://www.jobs.service.gov.uk/jobs" target="_blank" rel="noopener">Find a job (opens in new tab)</a></li>
+          <li><a href="https://www.jobs.service.gov.uk/cv" target="_blank" rel="noopener">CV Builder (opens in new tab)</a></li>
           <li><a href="https://www.gov.uk/get-help-applying-for-jobs" target="_blank" rel="noopener">Get help applying for jobs (opens in new tab)</a></li>
-          <li><a href="https://nationalcareers.service.gov.uk/careers-advice/cv-sections" target="_blank" rel="noopener">Write a CV (opens in new tab)</a></li>
           <li><a href="https://nationalcareers.service.gov.uk/careers-advice/interview-advice" target="_blank" rel="noopener">Interview advice (opens in new tab)</a></li>
           <li><a href="quest.html">Find out about the Job Quest</a></li>
         </ul>
       </aside>
     </div>
-
-    <form id="quiz" hidden novalidate>
-      <a href="#" class="back" id="qback">Back</a>
-      <div id="qbody" style="margin-top:20px"></div>
-      <button class="btn" type="submit" id="qnext">Continue</button>
-    </form>
-
   </div>
 </main>
 <div id="jq-foot"></div>
 
 <script src="jq.js"></script>
-<script>
-JQ.chrome('index.html');
-const Q = JQ.QUESTIONS;
-const ans = Object.assign({}, JQ.answers() || {});
-let step = 0, error = false;
-const startEl = document.getElementById('start'), form = document.getElementById('quiz'), body = document.getElementById('qbody');
-
-function show() {
-  const q = Q[step];
-  document.getElementById('qnext').textContent = step === Q.length - 1 ? 'See my results' : 'Continue';
-  body.innerHTML =
-    `<div class="${error ? 'error-group' : ''}"><fieldset aria-describedby="${q.hint ? 'hint-' + q.id : ''}">` +
-    `<p class="qprog">Question ${step + 1} of ${Q.length}</p>` +
-    `<legend><h1>${q.q}</h1></legend>` +
-    (q.hint ? `<p class="hint" id="hint-${q.id}">${q.hint}</p>` : '') +
-    (error ? `<p class="error-msg" id="err"><span class="visually-hidden">Error: </span>Select an answer</p>` : '') +
-    `<div class="radios">` + q.options.map(([v, t], i) =>
-      `<div class="radio"><input type="radio" id="${q.id}-${i}" name="${q.id}" value="${v}"${ans[q.id] === v ? ' checked' : ''}><label for="${q.id}-${i}">${t}</label></div>`).join('') +
-    `</div></fieldset></div>`;
-}
-document.getElementById('begin').addEventListener('click', () => { startEl.hidden = true; form.hidden = false; step = 0; error = false; show(); body.querySelector('h1').focus?.(); window.scrollTo(0, 0); });
-document.getElementById('qback').addEventListener('click', e => {
-  e.preventDefault(); error = false;
-  if (step === 0) { form.hidden = true; startEl.hidden = false; } else { step--; show(); }
-});
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const q = Q[step], picked = form.querySelector(`input[name="${q.id}"]:checked`);
-  if (!picked) { error = true; show(); return; }
-  error = false; ans[q.id] = picked.value;
-  if (step < Q.length - 1) { step++; show(); window.scrollTo(0, 0); return; }
-  JQ.store.set('jq-answers', ans);
-  location.href = 'results.html';
-});
-</script>
+<script>JQ.chrome('index.html');</script>
 </body>
 </html>

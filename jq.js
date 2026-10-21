@@ -16,7 +16,7 @@
     { name: 'Create a CV', place: 'CV Town', ground: '#b3c27a', skill: 'CV writing',
       stages: [
         { name: 'Build your personal statement', note: 'Options based on what you have told us, with help from an AI work assistant', link: { text: 'AI work assistant (link TBC)' } },
-        { name: 'Add your experience and qualifications', link: { text: 'CV Builder', href: 'https://nationalcareers.service.gov.uk/careers-advice/cv-sections' } },
+        { name: 'Add your experience and qualifications', link: { text: 'CV Builder', href: 'https://www.jobs.service.gov.uk/cv' } },
         { name: 'Get feedback on your CV', note: 'Based on applicant tracking system (ATS) checks and AI analysis of your CV' },
         { name: 'Work readiness check-in', note: 'A short quiz' },
       ],
@@ -25,7 +25,7 @@
       loop: 'If your CV is missing something, we send you back to a quest in Know yourself.' },
     { name: 'Search for jobs', place: 'Application City', ground: '#b1b4b6', skill: 'Job searching',
       stages: [
-        { name: 'Find jobs that suit you', note: 'Job match shown as stars, plus what people like you applied for', link: { text: 'Find a job', href: 'https://findajob.dwp.gov.uk/' } },
+        { name: 'Find jobs that suit you', note: 'Job match shown as stars, plus what people like you applied for', link: { text: 'Find a job', href: 'https://www.jobs.service.gov.uk/jobs' } },
         { name: '"Is this job right for me?" quiz', note: 'Understand the job spec, check your skills match and how relevant the role is' },
         { name: 'Job-specific test', note: 'Helping make sure the job is right for you' },
         { name: 'Apply for jobs', note: 'What to expect and how to get feedback on your applications', link: { text: 'Track your applications', href: 'applications.html', internal: true } },
@@ -156,7 +156,7 @@
   }
 
   /* ---- Page chrome ---- */
-  const PAGES = [['index.html', 'Quiz'], ['results.html', 'Your results'], ['quest.html', 'The quest'], ['map.html', 'Quest map'], ['applications.html', 'Applications'], ['profile.html', 'Profile']];
+  const PAGES = [['index.html', 'Quiz'], ['quest.html', 'The quest'], ['map.html', 'Quest map'], ['applications.html', 'Applications'], ['profile.html', 'Profile']];
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   function chrome(active) {
     const top = document.getElementById('jq-top');
@@ -167,7 +167,7 @@
     const foot = document.getElementById('jq-foot');
     if (foot) foot.innerHTML = `<footer class="footer"><div class="width"><span>Job Quest prototype</span><button class="linkbtn" type="button" id="jq-reset">Reset this prototype</button></div></footer>`;
     const r = document.getElementById('jq-reset');
-    if (r) r.addEventListener('click', () => { ['jq-answers', 'jq-avatar', 'jq-gov2-cur', 'jq-gov2-side', 'jq-confirmed', 'jq-cheers', 'jq-apps', 'jq-tips'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); location.href = 'index.html'; });
+    if (r) r.addEventListener('click', () => { ['jq-answers', 'jq-avatar', 'jq-gov2-cur', 'jq-gov2-side', 'jq-confirmed', 'jq-cheers', 'jq-apps', 'jq-tips', 'jq-draft'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); location.href = 'index.html'; });
   }
 
   window.JQ = { C, WORLDS, FINISH_STEPS, XP_QUEST, XP_SIDE, XP_LEVEL, store, QUESTIONS, EXAMPLE_ANSWERS, answers, label, SEGMENTS, segmentFor,

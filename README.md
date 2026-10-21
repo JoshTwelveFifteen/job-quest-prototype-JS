@@ -6,7 +6,8 @@ This is a prototype for discussion. People, numbers and leaderboard data are exa
 
 ## Pages
 
-- `index.html` – personalise your journey quiz
+- `index.html` – start page for the personalisation quiz
+- `question-1.html` to `question-5.html` – one quiz question per page (`quiz.js`)
 - `results.html` – your results and tools
 - `quest.html` – what the quest is and where you start
 - `map.html` – the quest map and step-by-step list

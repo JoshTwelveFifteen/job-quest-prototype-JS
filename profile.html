@@ -249,7 +249,7 @@ function render() {
 function renderDetails() {
   const confirmed = JQ.store.get('jq-confirmed', false);
   document.getElementById('details').innerHTML = JQ.QUESTIONS.map(q =>
-    `<div><dt>${q.q}</dt><dd>${JQ.label(q.id, a[q.id])}</dd><dd><a href="index.html">Change<span class="visually-hidden"> ${q.q.toLowerCase()}</span></a></dd></div>`).join('');
+    `<div><dt>${q.q}</dt><dd>${JQ.label(q.id, a[q.id])}</dd><dd><a href="question-${JQ.QUESTIONS.indexOf(q) + 1}.html">Change<span class="visually-hidden"> ${q.q.toLowerCase()}</span></a></dd></div>`).join('');
   const tag = document.getElementById('conf-tag');
   tag.className = 'tag ' + (confirmed ? 'green' : 'yellow');
   tag.textContent = confirmed ? 'Confirmed' : 'Not confirmed yet';
